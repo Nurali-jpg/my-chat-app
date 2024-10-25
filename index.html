@@ -57,6 +57,7 @@
 const db = firebase.firestore();
 
         // Отправка сообщений
+		console.log("Кнопка нажата, сообщение:", message);
         document.getElementById("send-button").addEventListener("click", function() {
             const message = document.getElementById("message-input").value;
 
