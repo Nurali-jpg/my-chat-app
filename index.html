@@ -3,39 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат</title>
+    <title>Проверка подключения к Firebase</title>
     <!-- Подключаем Firebase с помощью CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        #chat {
-            border: 1px solid #ccc;
-            padding: 10px;
-            height: 300px;
-            overflow-y: scroll;
-            margin-bottom: 10px;
-        }
-        #message-input {
-            width: calc(100% - 100px);
-            padding: 10px;
-            margin-right: 10px;
-        }
-        #send-button {
-            padding: 10px 20px;
-        }
-    </style>
 </head>
 <body>
-
-    <h1>Чат</h1>
-    <div id="chat"></div>
-    <input type="text" id="message-input" placeholder="Введите сообщение...">
-    <button id="send-button">Отправить</button>
+    <h1>Проверка подключения к Firebase</h1>
+    <div id="status"></div>
 
     <script>
         // Ваш конфигурационный объект Firebase
@@ -49,45 +24,14 @@
         };
 
         // Инициализация Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(app);
-
-        // Отправка сообщений
-        document.getElementById("send-button").addEventListener("click", async function() {
-            const message = document.getElementById("message-input").value;
-
-            console.log("Кнопка нажата, сообщение:", message); // Для отладки
-
-            if (message) {
-                try {
-                    await db.collection("messages").add({
-                        text: message,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    document.getElementById("message-input").value = ""; // Очистка поля ввода после отправки
-                    console.log("Сообщение отправлено!");
-                } catch (error) {
-                    console.error("Ошибка отправки сообщения: ", error);
-                }
-            }
-        });
-
-        // Получение сообщений
-        db.collection("messages").orderBy("timestamp").onSnapshot((snapshot) => {
-            const chat = document.getElementById("chat");
-            chat.innerHTML = ""; // Очистка чата перед обновлением
-
-            snapshot.forEach((doc) => {
-                const message = doc.data().text;
-                const messageElement = document.createElement("div");
-                messageElement.textContent = message;
-                chat.appendChild(messageElement);
-            });
-
-            // Прокрутка вниз к последнему сообщению
-            chat.scrollTop = chat.scrollHeight;
-        });
+        try {
+            const app = firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore(app);
+            document.getElementById('status').innerText = 'Подключение к Firebase успешно!';
+        } catch (error) {
+            document.getElementById('status').innerText = 'Ошибка подключения к Firebase: ' + error.message;
+            console.error("Ошибка инициализации Firebase: ", error);
+        }
     </script>
-
 </body>
 </html>
