@@ -37,8 +37,15 @@
     <button id="send-button">Отправить</button>
 
     <script>
-        // Ваш конфигурационный объект Firebase
-        const firebaseConfig = {
+        // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
   apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
   authDomain: "test0-e7c10.firebaseapp.com",
   projectId: "test0-e7c10",
@@ -46,9 +53,9 @@
   messagingSenderId: "383308995691",
   appId: "1:383308995691:web:704d81923b0e512d09252e",
   measurementId: "G-74N8R0BRS0"
-        };
+};
 
-        // Initialize Firebase
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
