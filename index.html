@@ -24,13 +24,12 @@
         };
 
         // Инициализация Firebase
-        try {
-            const app = firebase.initializeApp(firebaseConfig);
-            const db = firebase.firestore(app);
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(app);
+
+        // Проверка подключения
+        if (app) {
             document.getElementById('status').innerText = 'Подключение к Firebase успешно!';
-        } catch (error) {
-            document.getElementById('status').innerText = 'Ошибка подключения к Firebase: ' + error.message;
-            console.error("Ошибка инициализации Firebase: ", error);
         }
     </script>
 </body>
