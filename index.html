@@ -6,7 +6,7 @@
     <title>Чат с реакциями</title>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, updateDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
@@ -21,6 +21,8 @@
         const db = getFirestore(app);
 
         document.addEventListener("DOMContentLoaded", () => {
+            console.log("Страница загружена и готова!");
+
             const messageInput = document.getElementById("message-input");
             const sendButton = document.getElementById("send-button");
             const chat = document.getElementById("chat");
@@ -32,16 +34,16 @@
                         await addDoc(collection(db, "messages"), {
                             text: message,
                             timestamp: serverTimestamp(),
-                            reactions: {} // Инициализация поля для реакций
+                            reactions: {}
                         });
                         messageInput.value = ""; // Очистка поля ввода
+                        console.log("Сообщение отправлено: ", message);
                     } catch (error) {
                         console.error("Ошибка отправки сообщения: ", error);
                     }
                 }
             });
 
-            // Запрос с сортировкой по времени
             const messagesQuery = query(collection(db, "messages"), orderBy("timestamp"));
             onSnapshot(messagesQuery, (snapshot) => {
                 chat.innerHTML = ""; // Очистка чата перед обновлением
@@ -49,24 +51,10 @@
                     const messageData = doc.data();
                     const messageElement = document.createElement("div");
                     messageElement.textContent = messageData.text;
-
-                    // Добавление реакции
-                    const reactionButton = document.createElement("button");
-                    reactionButton.textContent = "👍";
-                    reactionButton.addEventListener("click", async () => {
-                        const currentReactions = messageData.reactions || {};
-                        currentReactions["👍"] = (currentReactions["👍"] || 0) + 1;
-                        await updateDoc(doc.ref, { reactions: currentReactions });
-                    });
-
-                    // Отображение количества реакций
-                    const reactionCount = document.createElement("span");
-                    reactionCount.textContent = ` (${(messageData.reactions && messageData.reactions["👍"]) || 0})`;
-                    messageElement.appendChild(reactionButton);
-                    messageElement.appendChild(reactionCount);
                     chat.appendChild(messageElement);
                 });
-                chat.scrollTop = chat.scrollHeight; // Прокрутка вниз к последнему сообщению
+                chat.scrollTop = chat.scrollHeight;
+                console.log("Чат обновлен");
             });
         });
     </script>
