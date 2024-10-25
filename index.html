@@ -6,7 +6,7 @@
     <title>Чат с реакциями</title>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, updateDoc, doc, getDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
@@ -114,5 +114,8 @@
 
     <h1>Чат с реакциями</h1>
     <div id="chat"></div>
-    <input type="text" id="message-input" placeholder="Введите сообщение...">
-    <b
+    <input type="text" id="message-input" placeholder="Введите сообщение..." required>
+    <button id="send-button">Отправить</button>
+
+</body>
+</html>
