@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Чат</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -40,50 +40,44 @@
         // Ваш конфигурационный объект Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
-  authDomain: "test0-e7c10.firebaseapp.com",
-  projectId: "test0-e7c10",
-  storageBucket: "test0-e7c10.appspot.com",
-  messagingSenderId: "383308995691",
-  appId: "1:383308995691:web:704d81923b0e512d09252e"
+            authDomain: "test0-e7c10.firebaseapp.com",
+            projectId: "test0-e7c10",
+            storageBucket: "test0-e7c10.appspot.com",
+            messagingSenderId: "383308995691",
+            appId: "1:383308995691:web:704d81923b0e512d09252e"
         };
 
         // Инициализация Firebase
-try {
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    console.log("Firebase успешно инициализирован");
-} catch (error) {
-    console.error("Ошибка инициализации Firebase:", error);
-}
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         // Отправка сообщений
-        document.getElementById("send-button").addEventListener("click", function() {
+        document.getElementById("send-button").addEventListener("click", async function() {
             const message = document.getElementById("message-input").value;
 
             console.log("Кнопка нажата, сообщение:", message); // Для отладки
 
             if (message) {
-                db.collection("messages").add({
-                    text: message,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                })
-                .then(() => {
+                try {
+                    await addDoc(collection(db, "messages"), {
+                        text: message,
+                        timestamp: serverTimestamp()
+                    });
                     document.getElementById("message-input").value = ""; // Очистка поля ввода после отправки
                     console.log("Сообщение отправлено!");
-                })
-                .catch((error) => {
+                } catch (error) {
                     console.error("Ошибка отправки сообщения: ", error);
-                });
+                }
             }
-			else {
-    console.log("Сообщение пустое, ничего не отправляем");
-}
         });
 
         // Получение сообщений
-        db.collection("messages").orderBy("timestamp").onSnapshot((snapshot) => {
+        const messagesRef = collection(db, "messages");
+        const q = query(messagesRef, orderBy("timestamp"));
+        onSnapshot(q, (snapshot) => {
             const chat = document.getElementById("chat");
             chat.innerHTML = ""; // Очистка чата перед обновлением
 
