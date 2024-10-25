@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат с реакциями</title>
+    <title>Чат с реакциями и подреакциями</title>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
@@ -21,6 +21,8 @@
         const db = getFirestore(app);
 
         document.addEventListener("DOMContentLoaded", () => {
+            console.log("Страница загружена и готова!");
+
             const messageInput = document.getElementById("message-input");
             const sendButton = document.getElementById("send-button");
             const chat = document.getElementById("chat");
@@ -34,7 +36,8 @@
                             timestamp: serverTimestamp(),
                             reactions: {}
                         });
-                        messageInput.value = ""; 
+                        messageInput.value = ""; // Очистка поля ввода
+                        console.log("Сообщение отправлено: ", message);
                     } catch (error) {
                         console.error("Ошибка отправки сообщения: ", error);
                     }
@@ -43,100 +46,24 @@
 
             const messagesQuery = query(collection(db, "messages"), orderBy("timestamp"));
             onSnapshot(messagesQuery, (snapshot) => {
-                chat.innerHTML = ""; 
+                chat.innerHTML = ""; // Очистка чата перед обновлением
                 snapshot.forEach((doc) => {
                     const messageData = doc.data();
-                    const messageId = doc.id;
-
                     const messageElement = document.createElement("div");
+                    messageElement.className = "message";
+
                     messageElement.textContent = messageData.text;
-
-                    const reactionsContainer = document.createElement("div");
-                    const reactions = messageData.reactions || {};
-                    const reactionButtons = ['👍', '❤️', '😂', '😮', '😢', '😡'];
-
-                    reactionButtons.forEach((reaction) => {
-                        const button = document.createElement("button");
-                        button.textContent = reaction;
-                        button.style.display = 'none'; // Hide buttons initially
-                        button.addEventListener("click", async () => {
-                            const reactionData = reactions[reaction] || {};
-                            const newReactions = {
-                                ...reactionData,
-                                count: (reactionData.count || 0) + 1,
-                                reactions: { ...(reactionData.reactions || {}) }
-                            };
-
-                            const userReaction = prompt("Введите вашу реакцию на реакцию (например, 👍, ❤️, 😂 и т.д.)");
-                            if (userReaction) {
-                                newReactions.reactions[userReaction] = (newReactions.reactions[userReaction] || 0) + 1;
-                            }
-
-                            await updateDoc(doc(db, "messages", messageId), {
-                                [`reactions.${reaction}`]: newReactions
-                            });
-                        });
-                        reactionsContainer.appendChild(button);
-
-                        if (reactions[reaction]) {
-                            const count = reactions[reaction].count || 0;
-                            const reactionDisplay = document.createElement("span");
-                            reactionDisplay.textContent = `${reaction} ${count}`;
-                            reactionsContainer.appendChild(reactionDisplay);
-                        }
-
-                        messageElement.appendChild(reactionsContainer);
-                    });
-
-                    messageElement.addEventListener("mouseenter", () => {
-                        reactionButtons.forEach((reaction) => {
-                            const button = reactionsContainer.querySelector(`button:contains('${reaction}')`);
-                            if (button) button.style.display = 'inline'; // Show buttons on hover
-                        });
-                    });
-
-                    messageElement.addEventListener("mouseleave", () => {
-                        reactionButtons.forEach((reaction) => {
-                            const button = reactionsContainer.querySelector(`button:contains('${reaction}')`);
-                            if (button) button.style.display = 'none'; // Hide buttons when not hovering
-                        });
-                    });
-
                     chat.appendChild(messageElement);
-                });
-                chat.scrollTop = chat.scrollHeight;
-            });
-        });
-    </script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        #chat {
-            border: 1px solid #ccc;
-            padding: 10px;
-            height: 300px;
-            overflow-y: scroll;
-            margin-bottom: 10px;
-        }
-        #message-input {
-            width: calc(100% - 100px);
-            padding: 10px;
-            margin-right: 10px;
-        }
-        #send-button {
-            padding: 10px 20px;
-        }
-    </style>
-</head>
-<body>
 
-    <h1>Чат с реакциями</h1>
-    <div id="chat"></div>
-    <input type="text" id="message-input" placeholder="Введите сообщение...">
-    <button id="send-button">Отправить</button>
+                    // Обработка наведения на сообщение
+                    messageElement.addEventListener("mouseenter", () => {
+                        const reactionContainer = document.createElement("div");
+                        reactionContainer.className = "reaction-container";
+                        
+                        // Создание кнопок реакций
+                        Object.keys(messageData.reactions).forEach((reaction) => {
+                            const button = document.createElement("button");
+                            button.textContent = reaction;
 
-</body>
-</html>
+                            // Добавление обработчика для добавления подреакции
+                            button.addEventListener("cli
