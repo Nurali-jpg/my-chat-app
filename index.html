@@ -25,8 +25,9 @@
   appId: "1:383308995691:web:704d81923b0e512d09252e",
   measurementId: "G-74N8R0BRS0"
 };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
   function sendMessage() {
     const messageInput = document.getElementById('message-input');
