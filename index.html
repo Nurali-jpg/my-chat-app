@@ -37,23 +37,26 @@
     <button id="send-button">Отправить</button>
 
     <script>
-        // Firebase config (ваш реальный firebaseConfig)
-		
-		import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+        // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
-  authDomain: "test0-e7c10.firebaseapp.com",
-  projectId: "test0-e7c10",
-  storageBucket: "test0-e7c10.appspot.com",
-  messagingSenderId: "383308995691",
-  appId: "1:383308995691:web:704d81923b0e512d09252e"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
+    authDomain: "test0-e7c10.firebaseapp.com",
+    projectId: "test0-e7c10",
+    storageBucket: "test0-e7c10.appspot.com",
+    messagingSenderId: "383308995691",
+    appId: "1:383308995691:web:704d81923b0e512d09252e",
+    measurementId: "G-74N8R0BRS0"
+  };
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
 
         // Отправка сообщений
         document.getElementById("send-button").addEventListener("click", function() {
