@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Проверка подключения к Firebase</title>
-    <!-- Подключаем Firebase с помощью CDN -->
+    <title>Простой Чат</title>
     <script type="module">
         // Ваш конфигурационный объект Firebase
         const firebaseConfig = {
@@ -18,24 +17,80 @@
 
         // Импортируем необходимые функции Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, orderBy, query } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
         // Инициализация Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Проверка подключения
-        document.addEventListener("DOMContentLoaded", () => {
-            if (app) {
-                document.body.insertAdjacentHTML('beforeend', '<p>Подключение к Firebase успешно!</p>');
-            } else {
-                document.body.insertAdjacentHTML('beforeend', '<p>Ошибка подключения к Firebase!</p>');
+        // Функция для отправки сообщений
+        async function sendMessage(message) {
+            if (message) {
+                try {
+                    await addDoc(collection(db, "messages"), {
+                        text: message,
+                        timestamp: new Date()
+                    });
+                } catch (error) {
+                    console.error("Ошибка отправки сообщения: ", error);
+                }
             }
+        }
+
+        // Получение сообщений из Firestore
+        const chatContainer = document.getElementById("chat");
+        const messagesQuery = query(collection(db, "messages"), orderBy("timestamp"));
+
+        onSnapshot(messagesQuery, (snapshot) => {
+            chatContainer.innerHTML = ""; // Очистка чата перед обновлением
+            snapshot.forEach((doc) => {
+                const message = doc.data().text;
+                const messageElement = document.createElement("div");
+                messageElement.textContent = message;
+                chatContainer.appendChild(messageElement);
+            });
+            chatContainer.scrollTop = chatContainer.scrollHeight; // Прокрутка вниз к последнему сообщению
+        });
+
+        // Обработчик кнопки отправки сообщения
+        document.addEventListener("DOMContentLoaded", () => {
+            const sendButton = document.getElementById("send-button");
+            const messageInput = document.getElementById("message-input");
+
+            sendButton.addEventListener("click", () => {
+                const message = messageInput.value.trim();
+                sendMessage(message);
+                messageInput.value = ""; // Очистка поля ввода после отправки
+            });
         });
     </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        #chat {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+        }
+        #message-input {
+            width: calc(100% - 100px);
+            padding: 10px;
+            margin-right: 10px;
+        }
+        #send-button {
+            padding: 10px 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Проверка подключения к Firebase</h1>
-    <div id="status"></div>
+    <h1>Простой Чат</h1>
+    <div id="chat"></div>
+    <input type="text" id="message-input" placeholder="Введите сообщение...">
+    <button id="send-button">Отправить</button>
 </body>
 </html>
