@@ -6,7 +6,7 @@
     <title>Чат с реакциями</title>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, updateDoc, doc, getDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
@@ -20,23 +20,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function addReaction(messageId, emoji) {
-            const messageRef = doc(db, "messages", messageId);
-            try {
-                const currentReactions = (await getDoc(messageRef)).data().reactions || {};
-                const newCount = (currentReactions[emoji] || 0) + 1;
-                await updateDoc(messageRef, {
-                    [`reactions.${emoji}`]: newCount
-                });
-                console.log(`Reaction ${emoji} added to message ${messageId}`);
-            } catch (error) {
-                console.error("Error adding reaction: ", error);
-            }
-        }
-
         document.addEventListener("DOMContentLoaded", () => {
-            console.log("Страница загружена и готова!");
-
             const messageInput = document.getElementById("message-input");
             const sendButton = document.getElementById("send-button");
             const chat = document.getElementById("chat");
@@ -50,8 +34,7 @@
                             timestamp: serverTimestamp(),
                             reactions: {}
                         });
-                        messageInput.value = ""; // Очистка поля ввода
-                        console.log("Сообщение отправлено: ", message);
+                        messageInput.value = ""; 
                     } catch (error) {
                         console.error("Ошибка отправки сообщения: ", error);
                     }
@@ -60,55 +43,68 @@
 
             const messagesQuery = query(collection(db, "messages"), orderBy("timestamp"));
             onSnapshot(messagesQuery, (snapshot) => {
-                chat.innerHTML = ""; // Очистка чата перед обновлением
+                chat.innerHTML = ""; 
                 snapshot.forEach((doc) => {
                     const messageData = doc.data();
+                    const messageId = doc.id;
+
                     const messageElement = document.createElement("div");
                     messageElement.textContent = messageData.text;
 
-                    // Создаем контейнер для реакций
                     const reactionsContainer = document.createElement("div");
-                    reactionsContainer.style.display = "none"; // Скрываем реакции изначально
+                    const reactions = messageData.reactions || {};
+                    const reactionButtons = ['👍', '❤️', '😂', '😮', '😢', '😡'];
 
-                    // Добавляем кнопки реакций
-                    const availableEmojis = ["👍", "❤️", "😂", "🎉"];
-                    availableEmojis.forEach((emoji) => {
-                        const reactionButton = document.createElement("button");
-                        const reactionCount = messageData.reactions[emoji] || 0;
+                    reactionButtons.forEach((reaction) => {
+                        const button = document.createElement("button");
+                        button.textContent = reaction;
+                        button.style.display = 'none'; // Hide buttons initially
+                        button.addEventListener("click", async () => {
+                            const reactionData = reactions[reaction] || {};
+                            const newReactions = {
+                                ...reactionData,
+                                count: (reactionData.count || 0) + 1,
+                                reactions: { ...(reactionData.reactions || {}) }
+                            };
 
-                        // Устанавливаем текст кнопки реакции
-                        reactionButton.textContent = `${emoji} ${reactionCount > 0 ? reactionCount : ''}`;
-                        
-                        reactionButton.onclick = () => addReaction(doc.id, emoji);
-                        reactionsContainer.appendChild(reactionButton);
-                    });
+                            const userReaction = prompt("Введите вашу реакцию на реакцию (например, 👍, ❤️, 😂 и т.д.)");
+                            if (userReaction) {
+                                newReactions.reactions[userReaction] = (newReactions.reactions[userReaction] || 0) + 1;
+                            }
 
-                    // Обработчик наведения на сообщение
-                    messageElement.addEventListener("mouseenter", () => {
-                        reactionsContainer.style.display = "block"; // Показываем реакции
-                    });
-                    messageElement.addEventListener("mouseleave", () => {
-                        reactionsContainer.style.display = "none"; // Скрываем реакции
-                    });
+                            await updateDoc(doc(db, "messages", messageId), {
+                                [`reactions.${reaction}`]: newReactions
+                            });
+                        });
+                        reactionsContainer.appendChild(button);
 
-                    // Добавляем использованные реакции под сообщением
-                    const usedReactionsContainer = document.createElement("div");
-                    availableEmojis.forEach((emoji) => {
-                        const reactionCount = messageData.reactions[emoji] || 0;
-                        if (reactionCount > 0) {
+                        if (reactions[reaction]) {
+                            const count = reactions[reaction].count || 0;
                             const reactionDisplay = document.createElement("span");
-                            reactionDisplay.textContent = `${emoji} ${reactionCount} `;
-                            usedReactionsContainer.appendChild(reactionDisplay);
+                            reactionDisplay.textContent = `${reaction} ${count}`;
+                            reactionsContainer.appendChild(reactionDisplay);
                         }
-                    });
-                    messageElement.appendChild(usedReactionsContainer);
 
-                    // Добавляем контейнер для реакций к сообщению
-                    messageElement.appendChild(reactionsContainer);
+                        messageElement.appendChild(reactionsContainer);
+                    });
+
+                    messageElement.addEventListener("mouseenter", () => {
+                        reactionButtons.forEach((reaction) => {
+                            const button = reactionsContainer.querySelector(`button:contains('${reaction}')`);
+                            if (button) button.style.display = 'inline'; // Show buttons on hover
+                        });
+                    });
+
+                    messageElement.addEventListener("mouseleave", () => {
+                        reactionButtons.forEach((reaction) => {
+                            const button = reactionsContainer.querySelector(`button:contains('${reaction}')`);
+                            if (button) button.style.display = 'none'; // Hide buttons when not hovering
+                        });
+                    });
+
                     chat.appendChild(messageElement);
                 });
                 chat.scrollTop = chat.scrollHeight;
-                console.log("Чат обновлен");
             });
         });
     </script>
@@ -133,17 +129,13 @@
         #send-button {
             padding: 10px 20px;
         }
-        button {
-            margin: 0 2px;
-            padding: 5px;
-        }
     </style>
 </head>
 <body>
 
     <h1>Чат с реакциями</h1>
     <div id="chat"></div>
-    <input type="text" id="message-input" placeholder="Введите сообщение..." required>
+    <input type="text" id="message-input" placeholder="Введите сообщение...">
     <button id="send-button">Отправить</button>
 
 </body>
