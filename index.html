@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат с реакциями</title>
+    <title>Чат с реакциями на реакции</title>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
@@ -21,11 +21,12 @@
         const db = getFirestore(app);
 
         document.addEventListener("DOMContentLoaded", () => {
+            console.log("Страница загружена и готова!");
+
             const messageInput = document.getElementById("message-input");
             const sendButton = document.getElementById("send-button");
             const chat = document.getElementById("chat");
 
-            // Отправка сообщения
             sendButton.addEventListener("click", async () => {
                 const message = messageInput.value;
                 if (message) {
@@ -33,82 +34,89 @@
                         await addDoc(collection(db, "messages"), {
                             text: message,
                             timestamp: serverTimestamp(),
-                            reactions: {} // Пустой объект для реакций
+                            reactions: {},
                         });
                         messageInput.value = ""; // Очистка поля ввода
+                        console.log("Сообщение отправлено: ", message);
                     } catch (error) {
                         console.error("Ошибка отправки сообщения: ", error);
                     }
                 }
             });
 
-            // Подписка на обновления сообщений
             const messagesQuery = query(collection(db, "messages"), orderBy("timestamp"));
             onSnapshot(messagesQuery, (snapshot) => {
                 chat.innerHTML = ""; // Очистка чата перед обновлением
-                snapshot.forEach((docSnapshot) => {
-                    const messageData = docSnapshot.data();
+                snapshot.forEach((doc) => {
+                    const messageData = doc.data();
                     const messageElement = document.createElement("div");
-                    messageElement.className = "message";
                     messageElement.textContent = messageData.text;
 
-                    // Обработка наведения на сообщение
-                    messageElement.addEventListener("mouseenter", () => {
-                        const reactionContainer = document.createElement("div");
-                        reactionContainer.className = "reaction-container";
+                    const reactionsContainer = document.createElement("div");
+                    reactionsContainer.style.display = "none"; // Скрываем реакции по умолчанию
+                    messageElement.appendChild(reactionsContainer);
 
-                        // Кнопки для реакций
-                        const reactions = ['👍', '❤️', '😂', '😮'];
-                        reactions.forEach(reaction => {
-                            const button = document.createElement("button");
-                            button.textContent = reaction;
+                    const reactions = messageData.reactions || {};
+                    const reactionButtons = ['👍', '❤️', '😂', '😮', '😢', '😡'];
+                    reactionButtons.forEach((emoji) => {
+                        const button = document.createElement("button");
+                        button.textContent = emoji;
+                        button.style.display = 'none'; // Скрываем кнопки реакций по умолчанию
 
-                            // Добавление обработчика для добавления реакции
-                            button.addEventListener("click", async (event) => {
-                                event.stopPropagation(); // Предотвращение всплытия события
-                                const messageRef = doc(db, "messages", docSnapshot.id); // Исправлено здесь
+                        // Считаем количество реакций
+                        const count = reactions[emoji] || 0;
 
-                                // Получаем текущий счётчик или устанавливаем 0
-                                const currentCount = messageData.reactions[reaction]?.count || 0;
+                        // Отображаем счётчик реакций
+                        const countElement = document.createElement("span");
+                        countElement.textContent = count > 0 ? `${count}` : '';
+                        countElement.style.marginLeft = '5px';
+                        reactionsContainer.appendChild(button);
+                        reactionsContainer.appendChild(countElement);
 
-                                // Обновляем реакцию
+                        button.addEventListener("click", async () => {
+                            const messageRef = doc(db, "messages", doc.id);
+                            try {
                                 await updateDoc(messageRef, {
-                                    [`reactions.${reaction}`]: {
-                                        count: currentCount + 1 // Увеличение счётчика реакции
-                                    }
+                                    [`reactions.${emoji}`]: (reactions[emoji] || 0) + 1 // Увеличиваем счётчик реакции
                                 });
-
-                                console.log(`Реакция '${reaction}' добавлена к сообщению с ID: ${docSnapshot.id}.`);
-                            });
-
-                            reactionContainer.appendChild(button);
+                                console.log("Реакция добавлена:", emoji);
+                            } catch (error) {
+                                console.error("Ошибка добавления реакции:", error);
+                            }
                         });
+                    });
 
-                        messageElement.appendChild(reactionContainer);
+                    // Показать реакции при наведении
+                    messageElement.addEventListener("mouseenter", () => {
+                        reactionsContainer.style.display = "block"; // Показать реакции при наведении
+                        reactionButtons.forEach((emoji) => {
+                            const button = Array.from(reactionsContainer.children).find(
+                                (child) => child.textContent === emoji
+                            );
+                            if (button) {
+                                button.style.display = 'inline'; // Показать кнопку реакции
+                            }
+                        });
                     });
 
                     messageElement.addEventListener("mouseleave", () => {
-                        const reactionContainer = messageElement.querySelector(".reaction-container");
-                        if (reactionContainer) {
-                            messageElement.removeChild(reactionContainer);
+                        reactionsContainer.style.display = "none"; // Скрыть реакции при уходе курсора
+                    });
+
+                    // Отображаем реакции под сообщением
+                    Object.entries(reactions).forEach(([emoji, count]) => {
+                        if (count > 0) {
+                            const reactionDisplay = document.createElement("span");
+                            reactionDisplay.textContent = `${emoji}: ${count}`;
+                            reactionDisplay.style.marginRight = "5px";
+                            reactionsContainer.appendChild(reactionDisplay);
                         }
                     });
 
-                    // Отображение реакций
-                    const reactionList = document.createElement("div");
-                    if (messageData.reactions) {
-                        Object.keys(messageData.reactions).forEach(reaction => {
-                            const count = messageData.reactions[reaction]?.count || 0; // Использование count
-                            const reactionDisplay = document.createElement("span");
-                            reactionDisplay.textContent = `${reaction} (${count}) `;
-                            reactionList.appendChild(reactionDisplay);
-                        });
-                    }
-                    messageElement.appendChild(reactionList);
-
                     chat.appendChild(messageElement);
                 });
-                chat.scrollTop = chat.scrollHeight; // Прокрутка вниз
+                chat.scrollTop = chat.scrollHeight;
+                console.log("Чат обновлен");
             });
         });
     </script>
@@ -133,18 +141,11 @@
         #send-button {
             padding: 10px 20px;
         }
-        .reaction-container {
-            display: flex;
-            margin-top: 5px;
-        }
-        .reaction-container button {
-            margin-right: 5px;
-        }
     </style>
 </head>
 <body>
 
-    <h1>Чат с реакциями</h1>
+    <h1>Чат с реакциями на реакции</h1>
     <div id="chat"></div>
     <input type="text" id="message-input" placeholder="Введите сообщение...">
     <button id="send-button">Отправить</button>
