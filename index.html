@@ -5,14 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Проверка подключения к Firebase</title>
     <!-- Подключаем Firebase с помощью CDN -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
-</head>
-<body>
-    <h1>Проверка подключения к Firebase</h1>
-    <div id="status"></div>
-
-    <script>
+    <script type="module">
         // Ваш конфигурационный объект Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
@@ -23,14 +16,26 @@
             appId: "1:383308995691:web:704d81923b0e512d09252e"
         };
 
+        // Импортируем необходимые функции Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
         // Инициализация Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         // Проверка подключения
-        if (app) {
-            document.getElementById('status').innerText = 'Подключение к Firebase успешно!';
-        }
+        document.addEventListener("DOMContentLoaded", () => {
+            if (app) {
+                document.body.insertAdjacentHTML('beforeend', '<p>Подключение к Firebase успешно!</p>');
+            } else {
+                document.body.insertAdjacentHTML('beforeend', '<p>Ошибка подключения к Firebase!</p>');
+            }
+        });
     </script>
+</head>
+<body>
+    <h1>Проверка подключения к Firebase</h1>
+    <div id="status"></div>
 </body>
 </html>
