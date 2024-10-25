@@ -23,8 +23,10 @@
         async function addReaction(messageId, emoji) {
             const messageRef = doc(db, "messages", messageId);
             try {
+                const currentReactions = (await getDoc(messageRef)).data().reactions || {};
+                const newCount = (currentReactions[emoji] || 0) + 1;
                 await updateDoc(messageRef, {
-                    [`reactions.${emoji}`]: (reactions[emoji] || 0) + 1
+                    [`reactions.${emoji}`]: newCount
                 });
                 console.log(`Reaction ${emoji} added to message ${messageId}`);
             } catch (error) {
@@ -51,4 +53,66 @@
                         messageInput.value = ""; // Очистка поля ввода
                         console.log("Сообщение отправлено: ", message);
                     } catch (error) {
-             
+                        console.error("Ошибка отправки сообщения: ", error);
+                    }
+                }
+            });
+
+            const messagesQuery = query(collection(db, "messages"), orderBy("timestamp"));
+            onSnapshot(messagesQuery, (snapshot) => {
+                chat.innerHTML = ""; // Очистка чата перед обновлением
+                snapshot.forEach((doc) => {
+                    const messageData = doc.data();
+                    const messageElement = document.createElement("div");
+                    messageElement.textContent = messageData.text;
+
+                    // Создаем контейнер для реакций
+                    const reactionsContainer = document.createElement("div");
+
+                    // Добавляем кнопки реакций
+                    ["👍", "❤️", "😂", "🎉"].forEach((emoji) => {
+                        const reactionButton = document.createElement("button");
+                        const reactionCount = messageData.reactions && messageData.reactions[emoji] ? messageData.reactions[emoji] : 0;
+                        reactionButton.textContent = `${emoji} ${reactionCount}`;
+                        reactionButton.onclick = () => addReaction(doc.id, emoji);
+                        reactionsContainer.appendChild(reactionButton);
+                    });
+
+                    // Добавляем сообщение и реакции в чат
+                    messageElement.appendChild(reactionsContainer);
+                    chat.appendChild(messageElement);
+                });
+                chat.scrollTop = chat.scrollHeight;
+                console.log("Чат обновлен");
+            });
+        });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        #chat {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+        }
+        #message-input {
+            width: calc(100% - 100px);
+            padding: 10px;
+            margin-right: 10px;
+        }
+        #send-button {
+            padding: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Чат с реакциями</h1>
+    <div id="chat"></div>
+    <input type="text" id="message-input" placeholder="Введите сообщение...">
+    <b
