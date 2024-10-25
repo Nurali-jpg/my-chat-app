@@ -38,6 +38,10 @@
 
     <script>
         // Firebase config (ваш реальный firebaseConfig)
+		
+		import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+
 const firebaseConfig = {
   apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
   authDomain: "test0-e7c10.firebaseapp.com",
@@ -47,9 +51,9 @@ const firebaseConfig = {
   appId: "1:383308995691:web:704d81923b0e512d09252e"
 };
 
-// Инициализация Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
         // Отправка сообщений
         document.getElementById("send-button").addEventListener("click", function() {
