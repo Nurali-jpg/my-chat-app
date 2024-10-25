@@ -7,7 +7,7 @@
     <script type="module">
         // Подключение к Firebase
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, updateDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, updateDoc, orderBy, query } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
@@ -42,7 +42,9 @@
                 }
             });
 
-            onSnapshot(collection(db, "messages"), (snapshot) => {
+            // Подключение к коллекции сообщений с сортировкой по timestamp
+            const messagesQuery = query(collection(db, "messages"), orderBy("timestamp"));
+            onSnapshot(messagesQuery, (snapshot) => {
                 chat.innerHTML = ""; // Очистка чата перед обновлением
                 snapshot.forEach((doc) => {
                     const messageData = doc.data();
@@ -61,43 +63,4 @@
                     // Отображение количества реакций
                     const reactionCount = document.createElement("span");
                     reactionCount.textContent = ` (${(messageData.reactions && messageData.reactions["👍"]) || 0})`; // Проверка на наличие реакций
-                    messageElement.appendChild(reactionButton);
-                    messageElement.appendChild(reactionCount);
-                    chat.appendChild(messageElement);
-                });
-                chat.scrollTop = chat.scrollHeight; // Прокрутка вниз к последнему сообщению
-            });
-        });
-    </script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        #chat {
-            border: 1px solid #ccc;
-            padding: 10px;
-            height: 300px;
-            overflow-y: scroll;
-            margin-bottom: 10px;
-        }
-        #message-input {
-            width: calc(100% - 100px);
-            padding: 10px;
-            margin-right: 10px;
-        }
-        #send-button {
-            padding: 10px 20px;
-        }
-    </style>
-</head>
-<body>
-
-    <h1>Чат с реакциями</h1>
-    <div id="chat"></div>
-    <input type="text" id="message-input" placeholder="Введите сообщение...">
-    <button id="send-button">Отправить</button>
-
-</body>
-</html>
+                   
