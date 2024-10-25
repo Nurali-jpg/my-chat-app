@@ -32,7 +32,7 @@
                         await addDoc(collection(db, "messages"), {
                             text: message,
                             timestamp: serverTimestamp(),
-                            reactions: {}
+                            reactions: {} // Пустой объект для реакций
                         });
                         messageInput.value = ""; // Очистка поля ввода
                     } catch (error) {
@@ -64,9 +64,10 @@
                             // Добавление обработчика для добавления реакции
                             button.addEventListener("click", async () => {
                                 const messageRef = doc(db, "messages", doc.id);
+                                const currentCount = messageData.reactions[reaction]?.count || 0;
                                 await updateDoc(messageRef, {
                                     [`reactions.${reaction}`]: {
-                                        count: (messageData.reactions[reaction]?.count || 0) + 1
+                                        count: currentCount + 1 // Увеличение счётчика реакции
                                     }
                                 });
                             });
@@ -88,7 +89,7 @@
                     const reactionList = document.createElement("div");
                     if (messageData.reactions) {
                         Object.keys(messageData.reactions).forEach(reaction => {
-                            const count = messageData.reactions[reaction].count;
+                            const count = messageData.reactions[reaction]?.count || 0; // Убедимся, что используем count
                             const reactionDisplay = document.createElement("span");
                             reactionDisplay.textContent = `${reaction} (${count}) `;
                             reactionList.appendChild(reactionDisplay);
