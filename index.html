@@ -83,4 +83,72 @@
                             } catch (error) {
                                 console.error("Ошибка добавления реакции:", error);
                             }
-       
+                        });
+                    });
+
+                    // Показать реакции при наведении
+                    messageElement.addEventListener("mouseenter", () => {
+                        reactionsContainer.style.display = "block"; // Показать реакции при наведении
+                        reactionButtons.forEach((emoji) => {
+                            const button = Array.from(reactionsContainer.children).find(
+                                (child) => child.textContent === emoji
+                            );
+                            if (button) {
+                                button.style.display = 'inline'; // Показать кнопку реакции
+                            }
+                        });
+                    });
+
+                    messageElement.addEventListener("mouseleave", () => {
+                        reactionsContainer.style.display = "none"; // Скрыть реакции при уходе курсора
+                    });
+
+                    // Отображаем реакции под сообщением
+                    Object.entries(reactions).forEach(([emoji, count]) => {
+                        if (count > 0) {
+                            const reactionDisplay = document.createElement("span");
+                            reactionDisplay.textContent = `${emoji}: ${count}`;
+                            reactionDisplay.style.marginRight = "5px";
+                            reactionsContainer.appendChild(reactionDisplay);
+                        }
+                    });
+
+                    chat.appendChild(messageElement);
+                });
+                chat.scrollTop = chat.scrollHeight;
+                console.log("Чат обновлен");
+            });
+        });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        #chat {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+        }
+        #message-input {
+            width: calc(100% - 100px);
+            padding: 10px;
+            margin-right: 10px;
+        }
+        #send-button {
+            padding: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Чат с реакциями на реакции</h1>
+    <div id="chat"></div>
+    <input type="text" id="message-input" placeholder="Введите сообщение...">
+    <button id="send-button">Отправить</button>
+
+</body>
+</html>
