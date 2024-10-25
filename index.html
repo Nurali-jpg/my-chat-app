@@ -67,12 +67,18 @@
                             button.addEventListener("click", async (event) => {
                                 event.stopPropagation(); // Предотвращение всплытия события
                                 const messageRef = doc(db, "messages", doc.id);
+                                
+                                // Получаем текущий счётчик или устанавливаем 0
                                 const currentCount = messageData.reactions[reaction]?.count || 0;
+                                
+                                // Обновляем реакцию
                                 await updateDoc(messageRef, {
                                     [`reactions.${reaction}`]: {
                                         count: currentCount + 1 // Увеличение счётчика реакции
                                     }
                                 });
+
+                                console.log(`Реакция '${reaction}' добавлена к сообщению с ID: ${doc.id}.`);
                             });
 
                             reactionContainer.appendChild(button);
