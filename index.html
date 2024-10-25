@@ -1,22 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Chat App</title>
+    <title>Чат</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        #chat {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+        }
+        #message-input {
+            width: calc(100% - 100px);
+            padding: 10px;
+            margin-right: 10px;
+        }
+        #send-button {
+            padding: 10px 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to Simple Chat!</h1>
-    <div id="chat-window"></div>
-    <input type="text" id="message-input" placeholder="Type a message">
-    <button onclick="sendMessage()">Send</button>
-    
-	<!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+
+    <h1>Чат</h1>
+    <div id="chat"></div>
+    <input type="text" id="message-input" placeholder="Введите сообщение...">
+    <button id="send-button">Отправить</button>
 
     <script>
-  const firebaseConfig = {
+        // Ваш конфигурационный объект Firebase
+        const firebaseConfig = {
   apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
   authDomain: "test0-e7c10.firebaseapp.com",
   projectId: "test0-e7c10",
@@ -24,61 +46,47 @@
   messagingSenderId: "383308995691",
   appId: "1:383308995691:web:704d81923b0e512d09252e",
   measurementId: "G-74N8R0BRS0"
-};
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+        };
 
-  function sendMessage() {
-    const messageInput = document.getElementById('message-input');
-    const messageText = messageInput.value;
+        // Инициализация Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-    if (messageText.trim() !== "") {
-      db.collection('messages').add({
-        text: messageText,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      }).then(() => {
-        messageInput.value = '';
-      }).catch(error => {
-        console.error("Ошибка при отправке сообщения: ", error);
-      });
-    }
-  }
+        // Отправка сообщений
+        document.getElementById("send-button").addEventListener("click", function() {
+            const message = document.getElementById("message-input").value;
 
-  function addReaction(messageId, emoji) {
-    db.collection('messages').doc(messageId).collection('reactions').add({
-      emoji: emoji,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    }).catch(error => {
-      console.error("Ошибка при добавлении реакции: ", error);
-    });
-  }
+            if (message) {
+                db.collection("messages").add({
+                    text: message,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    document.getElementById("message-input").value = ""; // Очистка поля ввода после отправки
+                    console.log("Сообщение отправлено!");
+                })
+                .catch((error) => {
+                    console.error("Ошибка отправки сообщения: ", error);
+                });
+            }
+        });
 
-  db.collection('messages').orderBy('timestamp').onSnapshot(snapshot => {
-    const chatWindow = document.getElementById('chat-window');
-    chatWindow.innerHTML = '';
+        // Получение сообщений
+        db.collection("messages").orderBy("timestamp").onSnapshot((snapshot) => {
+            const chat = document.getElementById("chat");
+            chat.innerHTML = ""; // Очистка чата перед обновлением
 
-    snapshot.forEach(doc => {
-      const messageData = doc.data();
-      const messageId = doc.id;
+            snapshot.forEach((doc) => {
+                const message = doc.data().text;
+                const messageElement = document.createElement("div");
+                messageElement.textContent = message;
+                chat.appendChild(messageElement);
+            });
 
-      const messageDiv = document.createElement('div');
-      messageDiv.textContent = messageData.text;
+            // Прокрутка вниз к последнему сообщению
+            chat.scrollTop = chat.scrollHeight;
+        });
+    </script>
 
-      const reactionButton1 = document.createElement('button');
-      reactionButton1.textContent = '👍';
-      reactionButton1.onclick = () => addReaction(messageId, '👍');
-
-      const reactionButton2 = document.createElement('button');
-      reactionButton2.textContent = '😂';
-      reactionButton2.onclick = () => addReaction(messageId, '😂');
-
-      messageDiv.appendChild(reactionButton1);
-      messageDiv.appendChild(reactionButton2);
-
-      chatWindow.appendChild(messageDiv);
-    });
-  });
-</script>
 </body>
 </html>
