@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Chat App</title>
+</head>
+<body>
+    <h1>Welcome to Simple Chat!</h1>
+    <div id="chat-window"></div>
+    <input type="text" id="message-input" placeholder="Type a message">
+    <button onclick="sendMessage()">Send</button>
+    
+	<!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+
+    <script>
+      // Firebase configuration
+      const firebaseConfig = {
+  apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
+  authDomain: "test0-e7c10.firebaseapp.com",
+  projectId: "test0-e7c10",
+  storageBucket: "test0-e7c10.appspot.com",
+  messagingSenderId: "383308995691",
+  appId: "1:383308995691:web:704d81923b0e512d09252e",
+  measurementId: "G-74N8R0BRS0"
+};
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+
+      // Initialize Firestore
+      const db = firebase.firestore();
+	  
+	   // Функция для отправки сообщений
+  function sendMessage() {
+    const messageInput = document.getElementById('message-input');
+    const messageText = messageInput.value;
+
+    // Проверяем, что сообщение не пустое
+    if (messageText.trim() !== "") {
+      // Добавляем сообщение в коллекцию "messages" в Firestore
+      db.collection('messages').add({
+        text: messageText,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        messageInput.value = ''; // Очищаем поле ввода после отправки
+      }).catch(error => {
+        console.error("Ошибка при отправке сообщения: ", error);
+      });
+    }
+  }
+  
+  // Функция для отслеживания сообщений в реальном времени
+  db.collection('messages').orderBy('timestamp').onSnapshot(snapshot => {
+    const chatWindow = document.getElementById('chat-window');
+    chatWindow.innerHTML = ''; // Очищаем чат перед загрузкой новых сообщений
+
+    // Для каждого сообщения в Firestore
+    snapshot.forEach(doc => {
+      const messageData = doc.data();
+      
+      // Создаем элемент для отображения сообщения
+      const messageDiv = document.createElement('div');
+      messageDiv.textContent = messageData.text; // Вставляем текст сообщения
+      chatWindow.appendChild(messageDiv); // Добавляем сообщение в чат
+    });
+  });
+  
+   // Функция для добавления реакции к определенному сообщению
+  function addReaction(messageId, emoji) {
+    db.collection('messages').doc(messageId).collection('reactions').add({
+      emoji: emoji,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(error => {
+      console.error("Ошибка при добавлении реакции: ", error);
+    });
+  }
+
+  // Изменяем onSnapshot для добавления кнопок с реакциями
+  db.collection('messages').orderBy('timestamp').onSnapshot(snapshot => {
+    const chatWindow = document.getElementById('chat-window');
+    chatWindow.innerHTML = '';
+
+    snapshot.forEach(doc => {
+      const messageData = doc.data();
+      const messageId = doc.id; // Получаем уникальный идентификатор сообщения
+
+      const messageDiv = document.createElement('div');
+      messageDiv.textContent = messageData.text;
+
+      // Добавляем кнопки для реакций
+      const reactionButton1 = document.createElement('button');
+      reactionButton1.textContent = '👍';
+      reactionButton1.onclick = () => addReaction(messageId, '👍');
+
+      const reactionButton2 = document.createElement('button');
+      reactionButton2.textContent = '😂';
+      reactionButton2.onclick = () => addReaction(messageId, '😂');
+
+      messageDiv.appendChild(reactionButton1);
+      messageDiv.appendChild(reactionButton2);
+
+      chatWindow.appendChild(messageDiv);
+    });
+  });
+  
+  
+    </script>
+</body>
+</html>
