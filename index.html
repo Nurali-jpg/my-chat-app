@@ -71,16 +71,18 @@
                     reactionsContainer.style.display = "none"; // Скрываем реакции изначально
 
                     // Добавляем кнопки реакций
-                    ["👍", "❤️", "😂", "🎉"].forEach((emoji) => {
+                    const availableEmojis = ["👍", "❤️", "😂", "🎉"];
+                    availableEmojis.forEach((emoji) => {
                         const reactionButton = document.createElement("button");
                         const reactionCount = messageData.reactions[emoji] || 0;
 
-                        // Отображаем только использованные реакции
+                        // Если реакция использовалась, показываем её с количеством
                         if (reactionCount > 0) { 
                             reactionButton.textContent = `${emoji} ${reactionCount}`;
                         } else {
                             // Если реакция не использовалась, создаем кнопку без текста
                             reactionButton.textContent = emoji;
+                            reactionButton.style.display = 'none'; // Скрываем кнопку
                         }
 
                         reactionButton.onclick = () => addReaction(doc.id, emoji);
@@ -90,10 +92,29 @@
                     // Обработчик наведения на сообщение
                     messageElement.addEventListener("mouseenter", () => {
                         reactionsContainer.style.display = "block"; // Показываем реакции
+                        availableEmojis.forEach((emoji) => {
+                            const reactionCount = messageData.reactions[emoji] || 0;
+                            const reactionButton = reactionsContainer.querySelector(`button:contains('${emoji}')`);
+                            if (reactionCount === 0) {
+                                reactionButton.style.display = "block"; // Показываем только кнопки с нулевым счетчиком
+                            }
+                        });
                     });
                     messageElement.addEventListener("mouseleave", () => {
                         reactionsContainer.style.display = "none"; // Скрываем реакции
                     });
+
+                    // Добавляем использованные реакции под сообщением
+                    const usedReactionsContainer = document.createElement("div");
+                    availableEmojis.forEach((emoji) => {
+                        const reactionCount = messageData.reactions[emoji] || 0;
+                        if (reactionCount > 0) {
+                            const reactionDisplay = document.createElement("span");
+                            reactionDisplay.textContent = `${emoji} ${reactionCount}`;
+                            usedReactionsContainer.appendChild(reactionDisplay);
+                        }
+                    });
+                    messageElement.appendChild(usedReactionsContainer);
 
                     // Добавляем сообщение и реакции в чат
                     messageElement.appendChild(reactionsContainer);
@@ -124,6 +145,10 @@
         }
         #send-button {
             padding: 10px 20px;
+        }
+        button {
+            margin: 0 2px;
+            padding: 5px;
         }
     </style>
 </head>
