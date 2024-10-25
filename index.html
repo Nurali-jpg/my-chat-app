@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Простой Чат</title>
+    <title>Чат с реакциями</title>
     <script type="module">
-        // Ваш конфигурационный объект Firebase
+        // Подключение к Firebase
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+
         const firebaseConfig = {
             apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
             authDomain: "test0-e7c10.firebaseapp.com",
@@ -15,52 +18,54 @@
             appId: "1:383308995691:web:704d81923b0e512d09252e"
         };
 
-        // Импортируем необходимые функции Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, orderBy, query } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
-
-        // Инициализация Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Функция для отправки сообщений
-        async function sendMessage(message) {
-            if (message) {
-                try {
-                    await addDoc(collection(db, "messages"), {
-                        text: message,
-                        timestamp: new Date()
-                    });
-                } catch (error) {
-                    console.error("Ошибка отправки сообщения: ", error);
-                }
-            }
-        }
-
-        // Получение сообщений из Firestore
-        const chatContainer = document.getElementById("chat");
-        const messagesQuery = query(collection(db, "messages"), orderBy("timestamp"));
-
-        onSnapshot(messagesQuery, (snapshot) => {
-            chatContainer.innerHTML = ""; // Очистка чата перед обновлением
-            snapshot.forEach((doc) => {
-                const message = doc.data().text;
-                const messageElement = document.createElement("div");
-                messageElement.textContent = message;
-                chatContainer.appendChild(messageElement);
-            });
-            chatContainer.scrollTop = chatContainer.scrollHeight; // Прокрутка вниз к последнему сообщению
-        });
-
-        // Обработчик кнопки отправки сообщения
         document.addEventListener("DOMContentLoaded", () => {
-            const sendButton = document.getElementById("send-button");
             const messageInput = document.getElementById("message-input");
+            const sendButton = document.getElementById("send-button");
+            const chat = document.getElementById("chat");
 
-            sendButton.addEventListener("click", () => {
-                const message = messageInput.value.trim();
-                sendMessage(message);
-                messageInput.value = ""; // Очистка поля ввода после отправки
+            sendButton.addEventListener("click", async () => {
+                const message = messageInput.value;
+                if (message) {
+                    try {
+                        await addDoc(collection(db, "messages"), {
+                            text: message,
+                            timestamp: serverTimestamp(),
+                            reactions: {} // Инициализация поля для реакций
+                        });
+                        messageInput.value = ""; // Очистка поля ввода
+                    } catch (error) {
+                        console.error("Ошибка отправки сообщения: ", error);
+                    }
+                }
+            });
+
+            onSnapshot(collection(db, "messages"), (snapshot) => {
+                chat.innerHTML = ""; // Очистка чата перед обновлением
+                snapshot.forEach((doc) => {
+                    const messageData = doc.data();
+                    const messageElement = document.createElement("div");
+                    messageElement.textContent = messageData.text;
+
+                    // Добавление реакции
+                    const reactionButton = document.createElement("button");
+                    reactionButton.textContent = "👍"; // Эмодзи для реакции
+                    reactionButton.addEventListener("click", async () => {
+                        const currentReactions = messageData.reactions;
+                        currentReactions["👍"] = (currentReactions["👍"] || 0) + 1; // Увеличиваем счетчик реакции
+                        await updateDoc(doc.ref, { reactions: currentReactions }); // Обновляем документ
+                    });
+
+                    // Отображение количества реакций
+                    const reactionCount = document.createElement("span");
+                    reactionCount.textContent = ` (${messageData.reactions["👍"] || 0})`;
+                    messageElement.appendChild(reactionButton);
+                    messageElement.appendChild(reactionCount);
+                    chat.appendChild(messageElement);
+                });
+                chat.scrollTop = chat.scrollHeight; // Прокрутка вниз к последнему сообщению
             });
         });
     </script>
@@ -88,9 +93,11 @@
     </style>
 </head>
 <body>
-    <h1>Простой Чат</h1>
+
+    <h1>Чат с реакциями</h1>
     <div id="chat"></div>
     <input type="text" id="message-input" placeholder="Введите сообщение...">
     <button id="send-button">Отправить</button>
+
 </body>
 </html>
