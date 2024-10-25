@@ -4,8 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Чат</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
+    <script type="module">
+        // Импортируем нужные функции из Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        // Ваш конфигурационный объект Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
+            authDomain: "test0-e7c10.firebaseapp.com",
+            projectId: "test0-e7c10",
+            storageBucket: "test0-e7c10.appspot.com",
+            messagingSenderId: "383308995691",
+            appId: "1:383308995691:web:704d81923b0e512d09252e"
+        };
+
+        // Инициализация Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Отправка сообщений
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("send-button").addEventListener("click", async function() {
+                const message = document.getElementById("message-input").value;
+
+                console.log("Кнопка нажата, сообщение:", message); // Для отладки
+
+                if (message) {
+                    try {
+                        await addDoc(collection(db, "messages"), {
+                            text: message,
+                            timestamp: serverTimestamp()
+                        });
+                        document.getElementById("message-input").value = ""; // Очистка поля ввода после отправки
+                        console.log("Сообщение отправлено!");
+                    } catch (error) {
+                        console.error("Ошибка отправки сообщения: ", error);
+                    }
+                }
+            });
+
+            // Получение сообщений
+            const messagesQuery = query(collection(db, "messages"), orderBy("timestamp"));
+            onSnapshot(messagesQuery, (snapshot) => {
+                const chat = document.getElementById("chat");
+                chat.innerHTML = ""; // Очистка чата перед обновлением
+
+                snapshot.forEach((doc) => {
+                    const message = doc.data().text;
+                    const messageElement = document.createElement("div");
+                    messageElement.textContent = message;
+                    chat.appendChild(messageElement);
+                });
+
+                // Прокрутка вниз к последнему сообщению
+                chat.scrollTop = chat.scrollHeight;
+            });
+        });
+    </script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,59 +91,6 @@
     <div id="chat"></div>
     <input type="text" id="message-input" placeholder="Введите сообщение...">
     <button id="send-button">Отправить</button>
-
-    <script>
-        // Ваш конфигурационный объект Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
-            authDomain: "test0-e7c10.firebaseapp.com",
-            projectId: "test0-e7c10",
-            storageBucket: "test0-e7c10.appspot.com",
-            messagingSenderId: "383308995691",
-            appId: "1:383308995691:web:704d81923b0e512d09252e"
-        };
-
-        // Инициализация Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // Отправка сообщений
-        document.getElementById("send-button").addEventListener("click", function() {
-            const message = document.getElementById("message-input").value;
-
-            console.log("Кнопка нажата, сообщение:", message); // Для отладки
-
-            if (message) {
-                db.collection("messages").add({
-                    text: message,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                })
-                .then(() => {
-                    document.getElementById("message-input").value = ""; // Очистка поля ввода после отправки
-                    console.log("Сообщение отправлено!");
-                })
-                .catch((error) => {
-                    console.error("Ошибка отправки сообщения: ", error);
-                });
-            }
-        });
-
-        // Получение сообщений
-        db.collection("messages").orderBy("timestamp").onSnapshot((snapshot) => {
-            const chat = document.getElementById("chat");
-            chat.innerHTML = ""; // Очистка чата перед обновлением
-
-            snapshot.forEach((doc) => {
-                const message = doc.data().text;
-                const messageElement = document.createElement("div");
-                messageElement.textContent = message;
-                chat.appendChild(messageElement);
-            });
-
-            // Прокрутка вниз к последнему сообщению
-            chat.scrollTop = chat.scrollHeight;
-        });
-    </script>
 
 </body>
 </html>
