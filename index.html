@@ -25,6 +25,7 @@
             const sendButton = document.getElementById("send-button");
             const chat = document.getElementById("chat");
 
+            // Отправка сообщения
             sendButton.addEventListener("click", async () => {
                 const message = messageInput.value;
                 if (message) {
@@ -41,6 +42,7 @@
                 }
             });
 
+            // Подписка на обновления сообщений
             const messagesQuery = query(collection(db, "messages"), orderBy("timestamp"));
             onSnapshot(messagesQuery, (snapshot) => {
                 chat.innerHTML = ""; // Очистка чата перед обновлением
@@ -62,7 +64,8 @@
                             button.textContent = reaction;
 
                             // Добавление обработчика для добавления реакции
-                            button.addEventListener("click", async () => {
+                            button.addEventListener("click", async (event) => {
+                                event.stopPropagation(); // Предотвращение всплытия события
                                 const messageRef = doc(db, "messages", doc.id);
                                 const currentCount = messageData.reactions[reaction]?.count || 0;
                                 await updateDoc(messageRef, {
@@ -89,7 +92,7 @@
                     const reactionList = document.createElement("div");
                     if (messageData.reactions) {
                         Object.keys(messageData.reactions).forEach(reaction => {
-                            const count = messageData.reactions[reaction]?.count || 0; // Убедимся, что используем count
+                            const count = messageData.reactions[reaction]?.count || 0; // Использование count
                             const reactionDisplay = document.createElement("span");
                             reactionDisplay.textContent = `${reaction} (${count}) `;
                             reactionList.appendChild(reactionDisplay);
