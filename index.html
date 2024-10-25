@@ -48,6 +48,13 @@
         };
 
         // Инициализация Firebase
+try {
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    console.log("Firebase успешно инициализирован");
+} catch (error) {
+    console.error("Ошибка инициализации Firebase:", error);
+}
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
@@ -70,6 +77,9 @@
                     console.error("Ошибка отправки сообщения: ", error);
                 });
             }
+			else {
+    console.log("Сообщение пустое, ничего не отправляем");
+}
         });
 
         // Получение сообщений
