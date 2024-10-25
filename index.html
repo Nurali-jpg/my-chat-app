@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат с реакциями и подреакциями</title>
+    <title>Чат с реакциями</title>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
@@ -21,8 +21,6 @@
         const db = getFirestore(app);
 
         document.addEventListener("DOMContentLoaded", () => {
-            console.log("Страница загружена и готова!");
-
             const messageInput = document.getElementById("message-input");
             const sendButton = document.getElementById("send-button");
             const chat = document.getElementById("chat");
@@ -37,7 +35,6 @@
                             reactions: {}
                         });
                         messageInput.value = ""; // Очистка поля ввода
-                        console.log("Сообщение отправлено: ", message);
                     } catch (error) {
                         console.error("Ошибка отправки сообщения: ", error);
                     }
@@ -51,19 +48,96 @@
                     const messageData = doc.data();
                     const messageElement = document.createElement("div");
                     messageElement.className = "message";
-
                     messageElement.textContent = messageData.text;
-                    chat.appendChild(messageElement);
 
                     // Обработка наведения на сообщение
                     messageElement.addEventListener("mouseenter", () => {
                         const reactionContainer = document.createElement("div");
                         reactionContainer.className = "reaction-container";
-                        
-                        // Создание кнопок реакций
-                        Object.keys(messageData.reactions).forEach((reaction) => {
+
+                        // Кнопки для реакций
+                        const reactions = ['👍', '❤️', '😂', '😮'];
+                        reactions.forEach(reaction => {
                             const button = document.createElement("button");
                             button.textContent = reaction;
 
-                            // Добавление обработчика для добавления подреакции
-                            button.addEventListener("cli
+                            // Добавление обработчика для добавления реакции
+                            button.addEventListener("click", async () => {
+                                const messageRef = doc(db, "messages", doc.id);
+                                await updateDoc(messageRef, {
+                                    [`reactions.${reaction}`]: {
+                                        count: (messageData.reactions[reaction]?.count || 0) + 1
+                                    }
+                                });
+                            });
+
+                            reactionContainer.appendChild(button);
+                        });
+
+                        messageElement.appendChild(reactionContainer);
+                    });
+
+                    messageElement.addEventListener("mouseleave", () => {
+                        const reactionContainer = messageElement.querySelector(".reaction-container");
+                        if (reactionContainer) {
+                            messageElement.removeChild(reactionContainer);
+                        }
+                    });
+
+                    // Отображение реакций
+                    const reactionList = document.createElement("div");
+                    if (messageData.reactions) {
+                        Object.keys(messageData.reactions).forEach(reaction => {
+                            const count = messageData.reactions[reaction].count;
+                            const reactionDisplay = document.createElement("span");
+                            reactionDisplay.textContent = `${reaction} (${count}) `;
+                            reactionList.appendChild(reactionDisplay);
+                        });
+                    }
+                    messageElement.appendChild(reactionList);
+
+                    chat.appendChild(messageElement);
+                });
+                chat.scrollTop = chat.scrollHeight; // Прокрутка вниз
+            });
+        });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        #chat {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+        }
+        #message-input {
+            width: calc(100% - 100px);
+            padding: 10px;
+            margin-right: 10px;
+        }
+        #send-button {
+            padding: 10px 20px;
+        }
+        .reaction-container {
+            display: flex;
+            margin-top: 5px;
+        }
+        .reaction-container button {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Чат с реакциями</h1>
+    <div id="chat"></div>
+    <input type="text" id="message-input" placeholder="Введите сообщение...">
+    <button id="send-button">Отправить</button>
+
+</body>
+</html>
