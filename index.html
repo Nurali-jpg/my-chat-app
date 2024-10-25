@@ -48,9 +48,9 @@
   measurementId: "G-74N8R0BRS0"
         };
 
-        // Инициализация Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        // Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
         // Отправка сообщений
         document.getElementById("send-button").addEventListener("click", function() {
