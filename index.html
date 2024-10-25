@@ -7,7 +7,7 @@
     <script type="module">
         // Подключение к Firebase
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, updateDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
@@ -53,14 +53,14 @@
                     const reactionButton = document.createElement("button");
                     reactionButton.textContent = "👍"; // Эмодзи для реакции
                     reactionButton.addEventListener("click", async () => {
-                        const currentReactions = messageData.reactions;
+                        const currentReactions = messageData.reactions || {}; // Проверка на наличие реакций
                         currentReactions["👍"] = (currentReactions["👍"] || 0) + 1; // Увеличиваем счетчик реакции
                         await updateDoc(doc.ref, { reactions: currentReactions }); // Обновляем документ
                     });
 
                     // Отображение количества реакций
                     const reactionCount = document.createElement("span");
-                    reactionCount.textContent = ` (${messageData.reactions["👍"] || 0})`;
+                    reactionCount.textContent = ` (${(messageData.reactions && messageData.reactions["👍"]) || 0})`; // Проверка на наличие реакций
                     messageElement.appendChild(reactionButton);
                     messageElement.appendChild(reactionCount);
                     chat.appendChild(messageElement);
