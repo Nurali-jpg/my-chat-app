@@ -3,17 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат с реакциями на реакции</title>
+    <title>Чат с реакциями</title>
     <style>
         .message { margin-bottom: 15px; }
         .reaction { display: inline-block; padding: 5px; cursor: pointer; }
-        .sub-reactions-container { display: none; margin-left: 20px; }
-        .reaction:hover .sub-reactions-container { display: flex; }
         .add-reaction-btn { cursor: pointer; color: blue; }
     </style>
 </head>
 <body>
-    <h1>Чат с реакциями на реакции</h1>
+    <h1>Чат с реакциями</h1>
     <div id="messages"></div>
     <input id="messageInput" type="text" placeholder="Введите сообщение">
     <button id="sendButton">Отправить</button>
@@ -67,19 +65,7 @@
                     const reactionBtn = document.createElement("span");
                     reactionBtn.classList.add("reaction");
                     reactionBtn.textContent = `${emoji} ${users.length}`;
-                    reactionBtn.onclick = () => toggleSubReaction(doc, emoji);
-
-                    const subReactionsContainer = document.createElement("div");
-                    subReactionsContainer.classList.add("sub-reactions-container");
-
-                    // Отображаем подреакции
-                    users.forEach((user) => {
-                        const subReactionBtn = document.createElement("span");
-                        subReactionBtn.textContent = user.subEmoji; // Подреакция отображается
-                        subReactionsContainer.appendChild(subReactionBtn);
-                    });
-
-                    reactionBtn.appendChild(subReactionsContainer);
+                    reactionBtn.onclick = () => addReaction(doc, emoji);
                     reactionsDiv.appendChild(reactionBtn);
                 }
 
@@ -87,10 +73,10 @@
                 const addReactionBtn = document.createElement("div");
                 addReactionBtn.classList.add("add-reaction-btn");
                 addReactionBtn.textContent = "Добавить реакцию";
-                addReactionBtn.onclick = () => toggleReactionMenu(doc);
+                addReactionBtn.onclick = () => toggleReactionMenu(reactionsDiv);
                 reactionsDiv.appendChild(addReactionBtn);
 
-                // Меню для выбора основной реакции
+                // Меню для выбора реакции
                 const reactionMenu = document.createElement("div");
                 reactionMenu.style.display = "none";
                 ["👍", "❤️", "😂", "😮", "😢", "😡"].forEach((emoji) => {
@@ -106,29 +92,16 @@
             });
         });
 
-        function toggleReactionMenu(messageDoc) {
-            const reactionsDiv = messageDoc.parentNode;
-            const reactionMenu = reactionsDiv.querySelector("div:nth-child(2)");
+        function toggleReactionMenu(reactionsDiv) {
+            const reactionMenu = reactionsDiv.querySelector("div:nth-child(3)");
             reactionMenu.style.display = reactionMenu.style.display === "none" ? "flex" : "none";
         }
 
         function addReaction(messageDoc, emoji) {
-            // Добавляем основную реакцию и создаем пустую подреакцию
+            // Добавляем основную реакцию
             updateDoc(messageDoc.ref, {
-                [`reactions.${emoji}`]: arrayUnion({ user: "user1", subEmoji: null })
+                [`reactions.${emoji}`]: arrayUnion("user1")
             });
-        }
-
-        function toggleSubReaction(messageDoc, emoji) {
-            console.log(`Вы выбрали под-реакцию для ${emoji}`);
-        }
-
-        function addSubReaction(messageDoc, emoji, subEmoji) {
-            // Добавляем подреакцию к основной реакции
-            updateDoc(messageDoc.ref, {
-                [`reactions.${emoji}`]: arrayUnion({ user: "user1", subEmoji: subEmoji })
-            });
-            console.log(`Вы выбрали ${subEmoji} для под-реакции к ${emoji}`);
         }
     </script>
 </body>
