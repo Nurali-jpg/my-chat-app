@@ -1,135 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Чат с реакциями на реакции</title>
-  <style>
-    .message { margin-bottom: 15px; }
-    .reaction { display: inline-block; padding: 5px; cursor: pointer; }
-    .sub-reactions-container { display: none; margin-left: 20px; }
-    .reaction:hover .sub-reactions-container { display: flex; }
-    .add-reaction-btn { cursor: pointer; color: blue; }
-    .reaction-menu { display: none; flex-direction: column; }
-    .reaction-menu span { cursor: pointer; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Крестики-нолики</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            border: 1px solid #000;
+            cursor: pointer;
+        }
+        .cell:hover {
+            background-color: #f0f0f0;
+        }
+        h2 {
+            margin: 20px;
+        }
+    </style>
 </head>
 <body>
-  <h1>Чат с реакциями на реакции</h1>
-  <div id="messages"></div>
-  <input id="messageInput" type="text" placeholder="Введите сообщение">
-  <button id="sendMessageBtn">Отправить</button>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+<h1>Крестики-нолики</h1>
+<h2 id="status"></h2>
+<div id="board"></div>
+<button onclick="resetGame()">Сбросить игру</button>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
-      authDomain: "test0-e7c10.firebaseapp.com",
-      projectId: "test0-e7c10",
-      storageBucket: "test0-e7c10.appspot.com",
-      messagingSenderId: "383308995691",
-      appId: "1:383308995691:web:704d81923b0e512d09252e"
-    };
+<script>
+    const board = document.getElementById('board');
+    const statusDisplay = document.getElementById('status');
+    let boardState = ['', '', '', '', '', '', '', '', ''];
+    let currentPlayer = 'X';
+    let isGameActive = true;
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const messagesRef = collection(db, "messages");
+    const winningConditions = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+    ];
 
-    function sendMessage() {
-      const messageInput = document.getElementById("messageInput");
-      const text = messageInput.value;
-      if (text) {
-        addDoc(messagesRef, { text, reactions: {} });
-        messageInput.value = "";
-      }
+    function createBoard() {
+        boardState.fill('');
+        isGameActive = true;
+        statusDisplay.textContent = `Ход игрока: ${currentPlayer}`;
+        board.innerHTML = '';
+        for (let i = 0; i < 9; i++) {
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.addEventListener('click', () => handleCellClick(i));
+            board.appendChild(cell);
+        }
     }
 
-    document.getElementById("sendMessageBtn").onclick = sendMessage;
+    function handleCellClick(index) {
+        if (boardState[index] !== '' || !isGameActive) return;
+        boardState[index] = currentPlayer;
+        renderBoard();
+        checkResult();
+    }
 
-    onSnapshot(messagesRef, (snapshot) => {
-      const messagesContainer = document.getElementById("messages");
-      messagesContainer.innerHTML = "";
-      snapshot.forEach((doc) => {
-        const messageData = doc.data();
-        const messageDiv = document.createElement("div");
-        messageDiv.classList.add("message");
+    function renderBoard() {
+        const cells = document.querySelectorAll('.cell');
+        cells.forEach((cell, index) => {
+            cell.textContent = boardState[index];
+        });
+    }
 
-        const textDiv = document.createElement("div");
-        textDiv.textContent = messageData.text;
-        messageDiv.appendChild(textDiv);
-
-        const reactionsDiv = document.createElement("div");
-
-        // Добавляем реакцию
-        for (const [emoji, users] of Object.entries(messageData.reactions || {})) {
-          const reactionBtn = document.createElement("span");
-          reactionBtn.classList.add("reaction");
-          reactionBtn.textContent = `${emoji} ${users.length}`; // показываем количество
-          reactionBtn.onclick = () => toggleSubReaction(reactionBtn, doc, emoji);
-          const subReactionsContainer = document.createElement("div");
-          subReactionsContainer.classList.add("sub-reactions-container");
-
-          ["👍", "❤️", "😂", "😮", "😢", "😡"].forEach((subEmoji) => {
-            const subReactionBtn = document.createElement("span");
-            subReactionBtn.textContent = subEmoji;
-            subReactionBtn.onclick = (event) => {
-              event.stopPropagation();
-              addSubReaction(doc, emoji, subEmoji); // добавляем подреакцию
-            };
-            subReactionsContainer.appendChild(subReactionBtn);
-          });
-
-          reactionBtn.appendChild(subReactionsContainer);
-          reactionsDiv.appendChild(reactionBtn);
+    function checkResult() {
+        let roundWon = false;
+        for (let i = 0; i < winningConditions.length; i++) {
+            const [a, b, c] = winningConditions[i];
+            if (boardState[a] === '' || boardState[b] === '' || boardState[c] === '') continue;
+            if (boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
+                roundWon = true;
+                break;
+            }
         }
 
-        const addReactionBtn = document.createElement("div");
-        addReactionBtn.classList.add("add-reaction-btn");
-        addReactionBtn.textContent = "Добавить реакцию";
-        addReactionBtn.onclick = () => toggleReactionMenu(messageDiv);
-        reactionsDiv.appendChild(addReactionBtn);
+        if (roundWon) {
+            statusDisplay.textContent = `Игрок ${currentPlayer} выиграл!`;
+            isGameActive = false;
+            return;
+        }
 
-        const reactionMenu = document.createElement("div");
-        reactionMenu.classList.add("reaction-menu");
-        ["👍", "❤️", "😂", "😮", "😢", "😡"].forEach((emoji) => {
-          const reactionBtn = document.createElement("span");
-          reactionBtn.textContent = emoji;
-          reactionBtn.onclick = () => addReaction(doc, emoji);
-          reactionMenu.appendChild(reactionBtn);
-        });
-        reactionsDiv.appendChild(reactionMenu);
+        if (!boardState.includes('')) {
+            statusDisplay.textContent = 'Ничья!';
+            isGameActive = false;
+            return;
+        }
 
-        messageDiv.appendChild(reactionsDiv);
-        messagesContainer.appendChild(messageDiv);
-      });
-    });
-
-    function toggleReactionMenu(messageDiv) {
-      const reactionMenu = messageDiv.querySelector(".reaction-menu");
-      reactionMenu.style.display = reactionMenu.style.display === "none" ? "flex" : "none";
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        statusDisplay.textContent = `Ход игрока: ${currentPlayer}`;
     }
 
-    function addReaction(messageDoc, emoji) {
-      const userId = "user1"; // Замените на реальный ID пользователя
-      updateDoc(messageDoc.ref, {
-        [`reactions.${emoji}`]: arrayUnion(userId)
-      });
+    function resetGame() {
+        createBoard();
     }
 
-    function toggleSubReaction(reactionBtn, messageDoc, emoji) {
-      const subReactionsContainer = reactionBtn.querySelector(".sub-reactions-container");
-      subReactionsContainer.style.display = subReactionsContainer.style.display === "none" ? "flex" : "none";
-    }
+    createBoard();
+</script>
 
-    function addSubReaction(messageDoc, emoji, subEmoji) {
-      console.log(`Вы выбрали ${subEmoji} для под-реакции к ${emoji}`);
-      const userId = "user1"; // Замените на реальный ID пользователя
-      updateDoc(messageDoc.ref, {
-        [`reactions.${emoji}`]: arrayUnion({ emoji: subEmoji, userId })
-      });
-    }
-  </script>
 </body>
 </html>
