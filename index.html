@@ -16,7 +16,7 @@
     <h1>Чат с реакциями на реакции</h1>
     <div id="messages"></div>
     <input id="messageInput" type="text" placeholder="Введите сообщение">
-    <button onclick="sendMessage()">Отправить</button>
+    <button id="sendButton">Отправить</button>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
@@ -35,6 +35,7 @@
         const db = getFirestore(app);
         const messagesRef = collection(db, "messages");
 
+        // Объявляем функцию sendMessage
         function sendMessage() {
             const messageInput = document.getElementById("messageInput");
             const text = messageInput.value;
@@ -43,6 +44,9 @@
                 messageInput.value = "";
             }
         }
+
+        // Привязываем обработчик события к кнопке
+        document.getElementById("sendButton").onclick = sendMessage;
 
         onSnapshot(messagesRef, (snapshot) => {
             const messagesContainer = document.getElementById("messages");
@@ -120,4 +124,12 @@
         }
 
         function addSubReaction(messageDoc, emoji, subEmoji) {
-            //
+            // Добавляем подреакцию к основной реакции
+            updateDoc(messageDoc.ref, {
+                [`reactions.${emoji}`]: arrayUnion({ user: "user1", subEmoji: subEmoji })
+            });
+            console.log(`Вы выбрали ${subEmoji} для под-реакции к ${emoji}`);
+        }
+    </script>
+</body>
+</html>
