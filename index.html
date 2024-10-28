@@ -57,6 +57,16 @@
                         reactionButton.addEventListener("mouseenter", () => showSubReactions(doc.id, reaction, subReactionsContainer));
                         reactionsContainer.appendChild(reactionButton);
                         reactionsContainer.appendChild(subReactionsContainer);
+
+                        // Отображение под-реакций со счётчиками
+                        if (reactionData.subReactions) {
+                            for (const [subReaction, subCount] of Object.entries(reactionData.subReactions)) {
+                                const subReactionButton = document.createElement("button");
+                                subReactionButton.textContent = `${subReaction} ${subCount || 0}`;
+                                subReactionButton.addEventListener("click", () => toggleSubReaction(doc.id, reaction, subReaction));
+                                reactionsContainer.appendChild(subReactionButton);
+                            }
+                        }
                     }
 
                     // Кнопка для добавления первой реакции
@@ -92,14 +102,16 @@
                 container.style.display = "flex"; // Показываем под-реакции
             }
 
-            async function toggleSubReaction(messageId, reaction) {
+            async function toggleSubReaction(messageId, parentReaction, subReaction) {
                 const messageRef = doc(db, "messages", messageId);
                 const messageSnapshot = await getDoc(messageRef);
                 const messageData = messageSnapshot.data();
 
-                const newSubCount = (messageData.reactions?.[reaction]?.count || 0) + 1;
+                const currentSubReactions = messageData.reactions?.[parentReaction]?.subReactions || {};
+                const newSubCount = (currentSubReactions[subReaction] || 0) + 1;
+
                 await updateDoc(messageRef, {
-                    [`reactions.${reaction}.count`]: newSubCount
+                    [`reactions.${parentReaction}.subReactions.${subReaction}`]: newSubCount
                 });
             }
         });
