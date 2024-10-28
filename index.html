@@ -6,7 +6,7 @@
     <title>Чат с реакциями на реакции</title>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, doc, updateDoc, onSnapshot, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, doc, getDoc, updateDoc, onSnapshot, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
@@ -46,9 +46,10 @@
                     messageElement.textContent = messageData.text;
                     const reactionsContainer = document.createElement("div");
 
-                    for (const [reaction, count] of Object.entries(messageData.reactions || {})) {
+                    // Отображение реакций
+                    for (const [reaction, reactionData] of Object.entries(messageData.reactions || {})) {
                         const reactionButton = document.createElement("button");
-                        reactionButton.textContent = `${reaction} ${count || 0}`;
+                        reactionButton.textContent = `${reaction} ${reactionData.count || 0}`;
                         reactionButton.addEventListener("click", () => toggleReaction(doc.id, reaction));
 
                         // Контейнер для под-реакций
@@ -58,6 +59,12 @@
                         reactionsContainer.appendChild(subReactionsContainer);
                     }
 
+                    // Кнопка для добавления первой реакции
+                    const addReactionButton = document.createElement("button");
+                    addReactionButton.textContent = "Добавить реакцию";
+                    addReactionButton.addEventListener("mouseenter", () => showSubReactions(doc.id, null, reactionsContainer));
+                    reactionsContainer.appendChild(addReactionButton);
+
                     messageElement.appendChild(reactionsContainer);
                     chat.appendChild(messageElement);
                 });
@@ -65,36 +72,34 @@
 
             async function toggleReaction(messageId, reaction) {
                 const messageRef = doc(db, "messages", messageId);
-                const messageSnapshot = await messageRef.get();
+                const messageSnapshot = await getDoc(messageRef);
                 const messageData = messageSnapshot.data();
 
-                // Обновляем реакцию в Firebase
-                const newCount = (messageData.reactions?.[reaction] || 0) + 1;
+                const newCount = (messageData.reactions?.[reaction]?.count || 0) + 1;
                 await updateDoc(messageRef, {
-                    [`reactions.${reaction}`]: newCount
+                    [`reactions.${reaction}.count`]: newCount
                 });
             }
 
             function showSubReactions(messageId, reaction, container) {
-                container.innerHTML = ""; // Очищаем под-реакции
-                ["😂", "😍", "😲", "😡"].forEach(subReaction => {
+                container.innerHTML = ""; // Очищаем контейнер для под-реакций
+                ["👍", "❤️", "😂", "😍", "😲", "😡"].forEach(subReaction => {
                     const subReactionButton = document.createElement("button");
                     subReactionButton.textContent = subReaction;
-                    subReactionButton.addEventListener("click", () => toggleSubReaction(messageId, reaction, subReaction));
+                    subReactionButton.addEventListener("click", () => toggleSubReaction(messageId, reaction || subReaction));
                     container.appendChild(subReactionButton);
                 });
                 container.style.display = "flex"; // Показываем под-реакции
             }
 
-            async function toggleSubReaction(messageId, reaction, subReaction) {
+            async function toggleSubReaction(messageId, reaction) {
                 const messageRef = doc(db, "messages", messageId);
-                const messageSnapshot = await messageRef.get();
+                const messageSnapshot = await getDoc(messageRef);
                 const messageData = messageSnapshot.data();
 
-                // Обновляем под-реакцию в Firebase
-                const newSubCount = (messageData.reactions?.[reaction]?.subReactions?.[subReaction] || 0) + 1;
+                const newSubCount = (messageData.reactions?.[reaction]?.count || 0) + 1;
                 await updateDoc(messageRef, {
-                    [`reactions.${reaction}.subReactions.${subReaction}`]: newSubCount
+                    [`reactions.${reaction}.count`]: newSubCount
                 });
             }
         });
