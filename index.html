@@ -18,7 +18,7 @@
   <h1>Чат с реакциями на реакции</h1>
   <div id="messages"></div>
   <input id="messageInput" type="text" placeholder="Введите сообщение">
-  <button onclick="sendMessage()">Отправить</button>
+  <button id="sendMessageBtn">Отправить</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
@@ -37,6 +37,7 @@
     const db = getFirestore(app);
     const messagesRef = collection(db, "messages");
 
+    // Определяем функцию sendMessage
     function sendMessage() {
       const messageInput = document.getElementById("messageInput");
       const text = messageInput.value;
@@ -46,6 +47,10 @@
       }
     }
 
+    // Привязываем событие click к кнопке после её создания
+    document.getElementById("sendMessageBtn").onclick = sendMessage;
+
+    // Слушаем изменения в коллекции сообщений
     onSnapshot(messagesRef, (snapshot) => {
       const messagesContainer = document.getElementById("messages");
       messagesContainer.innerHTML = "";
