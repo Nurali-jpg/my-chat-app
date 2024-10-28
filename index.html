@@ -37,7 +37,6 @@
     const db = getFirestore(app);
     const messagesRef = collection(db, "messages");
 
-    // Определяем функцию sendMessage
     function sendMessage() {
       const messageInput = document.getElementById("messageInput");
       const text = messageInput.value;
@@ -47,10 +46,8 @@
       }
     }
 
-    // Привязываем событие click к кнопке после её создания
     document.getElementById("sendMessageBtn").onclick = sendMessage;
 
-    // Слушаем изменения в коллекции сообщений
     onSnapshot(messagesRef, (snapshot) => {
       const messagesContainer = document.getElementById("messages");
       messagesContainer.innerHTML = "";
@@ -65,11 +62,12 @@
 
         const reactionsDiv = document.createElement("div");
 
+        // Добавляем реакцию
         for (const [emoji, users] of Object.entries(messageData.reactions || {})) {
           const reactionBtn = document.createElement("span");
           reactionBtn.classList.add("reaction");
-          reactionBtn.textContent = `${emoji} ${users.length}`;
-          reactionBtn.onclick = () => toggleSubReaction(reactionBtn, doc, emoji); // Pass the button for toggle
+          reactionBtn.textContent = `${emoji} ${users.length}`; // показываем количество
+          reactionBtn.onclick = () => toggleSubReaction(reactionBtn, doc, emoji);
           const subReactionsContainer = document.createElement("div");
           subReactionsContainer.classList.add("sub-reactions-container");
 
@@ -78,7 +76,7 @@
             subReactionBtn.textContent = subEmoji;
             subReactionBtn.onclick = (event) => {
               event.stopPropagation();
-              addSubReaction(doc, emoji, subEmoji);
+              addSubReaction(doc, emoji, subEmoji); // добавляем подреакцию
             };
             subReactionsContainer.appendChild(subReactionBtn);
           });
@@ -90,7 +88,7 @@
         const addReactionBtn = document.createElement("div");
         addReactionBtn.classList.add("add-reaction-btn");
         addReactionBtn.textContent = "Добавить реакцию";
-        addReactionBtn.onclick = () => toggleReactionMenu(messageDiv); // Pass messageDiv to toggle
+        addReactionBtn.onclick = () => toggleReactionMenu(messageDiv);
         reactionsDiv.appendChild(addReactionBtn);
 
         const reactionMenu = document.createElement("div");
@@ -114,8 +112,7 @@
     }
 
     function addReaction(messageDoc, emoji) {
-      // Replace "user1" with dynamic user identification
-      const userId = "user1"; // Replace with actual user ID
+      const userId = "user1"; // Замените на реальный ID пользователя
       updateDoc(messageDoc.ref, {
         [`reactions.${emoji}`]: arrayUnion(userId)
       });
@@ -128,7 +125,10 @@
 
     function addSubReaction(messageDoc, emoji, subEmoji) {
       console.log(`Вы выбрали ${subEmoji} для под-реакции к ${emoji}`);
-      // Implement storing sub-reactions if needed
+      const userId = "user1"; // Замените на реальный ID пользователя
+      updateDoc(messageDoc.ref, {
+        [`reactions.${emoji}`]: arrayUnion({ emoji: subEmoji, userId })
+      });
     }
   </script>
 </body>
