@@ -52,6 +52,11 @@
                     const messageElement = document.createElement("div");
                     messageElement.textContent = messageData.text;
 
+                    // Блок для отображения уже поставленных реакций под сообщением
+                    const reactionsDisplayContainer = document.createElement("div");
+                    messageElement.appendChild(reactionsDisplayContainer);
+
+                    // Блок выбора реакций при наведении
                     const reactionsContainer = document.createElement("div");
                     reactionsContainer.style.display = "none"; // Скрываем реакции по умолчанию
                     messageElement.appendChild(reactionsContainer);
@@ -61,23 +66,22 @@
                     reactionButtons.forEach((emoji) => {
                         const button = document.createElement("button");
                         button.textContent = emoji;
-                        button.style.display = 'none'; // Скрываем кнопки реакций по умолчанию
+                        button.style.marginRight = "5px";
 
-                        // Считаем количество реакций
+                        // Добавляем счётчик к кнопке только при наличии реакции
                         const count = reactions[emoji] || 0;
-
-                        // Отображаем счётчик реакций
                         const countElement = document.createElement("span");
                         countElement.textContent = count > 0 ? `${count}` : '';
                         countElement.style.marginLeft = '5px';
+
+                        button.appendChild(countElement);
                         reactionsContainer.appendChild(button);
-                        reactionsContainer.appendChild(countElement);
 
                         button.addEventListener("click", async () => {
-                            const messageRef = firestoreDoc(db, "messages", doc.id); // Используем переименованный doc
+                            const messageRef = firestoreDoc(db, "messages", doc.id);
                             try {
                                 await updateDoc(messageRef, {
-                                    [`reactions.${emoji}`]: (reactions[emoji] || 0) + 1 // Увеличиваем счётчик реакции
+                                    [`reactions.${emoji}`]: (reactions[emoji] || 0) + 1
                                 });
                                 console.log("Реакция добавлена:", emoji);
                             } catch (error) {
@@ -86,31 +90,23 @@
                         });
                     });
 
-                    // Показать реакции при наведении
-                    messageElement.addEventListener("mouseenter", () => {
-                        reactionsContainer.style.display = "block"; // Показать реакции при наведении
-                        reactionButtons.forEach((emoji) => {
-                            const button = Array.from(reactionsContainer.children).find(
-                                (child) => child.textContent === emoji
-                            );
-                            if (button) {
-                                button.style.display = 'inline'; // Показать кнопку реакции
-                            }
-                        });
-                    });
-
-                    messageElement.addEventListener("mouseleave", () => {
-                        reactionsContainer.style.display = "none"; // Скрыть реакции при уходе курсора
-                    });
-
-                    // Отображаем реакции под сообщением
+                    // Показываем только использованные реакции в отдельном блоке
                     Object.entries(reactions).forEach(([emoji, count]) => {
                         if (count > 0) {
                             const reactionDisplay = document.createElement("span");
-                            reactionDisplay.textContent = `${emoji}: ${count}`;
+                            reactionDisplay.textContent = `${emoji} ${count}`;
                             reactionDisplay.style.marginRight = "5px";
-                            reactionsContainer.appendChild(reactionDisplay);
+                            reactionsDisplayContainer.appendChild(reactionDisplay);
                         }
+                    });
+
+                    // Показать выбор реакций при наведении на сообщение
+                    messageElement.addEventListener("mouseenter", () => {
+                        reactionsContainer.style.display = "block";
+                    });
+
+                    messageElement.addEventListener("mouseleave", () => {
+                        reactionsContainer.style.display = "none";
                     });
 
                     chat.appendChild(messageElement);
