@@ -1,112 +1,149 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Реакции на текст</title>
+    <title>Emoji Reaction System</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
             background-color: #f5f5dc; /* Бежевый фон */
+            font-family: Arial, sans-serif;
         }
-        #content {
-            text-align: center;
-            border: 2px solid #d4af37;
-            padding: 20px;
+        #text-container {
+            border: 2px solid #ccc;
             border-radius: 10px;
-            font-size: 30px;
+            padding: 20px;
             position: relative;
         }
-        #reactions-container {
+        .emoji-selection {
             display: none;
             position: absolute;
-            top: 100%;
+            bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            background-color: #f5f5dc;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
             padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            margin-top: 10px;
-            z-index: 1;
+            z-index: 10;
         }
-        .reaction-btn {
-            font-size: 24px;
+        .emoji {
             cursor: pointer;
             margin: 5px;
-        }
-        .selected-reactions {
-            margin-top: 15px;
             font-size: 24px;
-            color: #d4af37;
+        }
+        .reaction {
+            display: inline-block;
+            position: relative;
+            margin: 5px;
+        }
+        .reaction-counter {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #555;
+        }
+        .reaction-level-2 {
+            display: none;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
-    <div id="content">
-        Рандомный текст
-        <div id="reactions-container">
-            <span class="reaction-btn" data-emoji="👍">👍</span>
-            <span class="reaction-btn" data-emoji="❤️">❤️</span>
-            <span class="reaction-btn" data-emoji="😂">😂</span>
-            <span class="reaction-btn" data-emoji="😮">😮</span>
-            <span class="reaction-btn" data-emoji="😢">😢</span>
-            <span class="reaction-btn" data-emoji="😡">😡</span>
+    <div id="text-container">
+        <div id="random-text">Это случайный текст.</div>
+        <div id="emoji-selection" class="emoji-selection">
+            <span class="emoji" data-reaction="👍">👍</span>
+            <span class="emoji" data-reaction="❤️">❤️</span>
+            <span class="emoji" data-reaction="😂">😂</span>
         </div>
-        <div class="selected-reactions" id="selected-reactions"></div>
     </div>
 
     <script>
-        const content = document.getElementById('content');
-        const reactionsContainer = document.getElementById('reactions-container');
-        const selectedReactions = document.getElementById('selected-reactions');
-        let hideTimeout;
+        const textContainer = document.getElementById('text-container');
+        const emojiSelection = document.getElementById('emoji-selection');
+        let selectedReactions = {};
 
-        content.addEventListener('mouseenter', () => {
-            clearTimeout(hideTimeout);
-            reactionsContainer.style.display = 'block';
+        // Функция для отображения окна выбора эмодзи
+        textContainer.addEventListener('mouseenter', () => {
+            emojiSelection.style.display = 'block';
         });
 
-        content.addEventListener('mouseleave', () => {
-            hideTimeout = setTimeout(() => {
-                reactionsContainer.style.display = 'none';
-            }, 300); // Задержка для предотвращения исчезновения
+        // Скрыть окно выбора эмодзи
+        textContainer.addEventListener('mouseleave', () => {
+            emojiSelection.style.display = 'none';
         });
 
-        reactionsContainer.addEventListener('mouseenter', () => {
-            clearTimeout(hideTimeout);
-        });
-
-        reactionsContainer.addEventListener('mouseleave', () => {
-            hideTimeout = setTimeout(() => {
-                reactionsContainer.style.display = 'none';
-            }, 300);
-        });
-
-        document.querySelectorAll('.reaction-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const emoji = btn.getAttribute('data-emoji');
-                const existingReaction = selectedReactions.querySelector(`span[data-emoji="${emoji}"]`);
-
-                if (existingReaction) {
-                    let count = parseInt(existingReaction.getAttribute('data-count')) + 1;
-                    existingReaction.setAttribute('data-count', count);
-                    existingReaction.textContent = `${emoji} ${count}`;
-                } else {
-                    const newReaction = document.createElement('span');
-                    newReaction.setAttribute('data-emoji', emoji);
-                    newReaction.setAttribute('data-count', 1);
-                    newReaction.textContent = `${emoji} 1`;
-                    newReaction.style.marginRight = '10px';
-                    selectedReactions.appendChild(newReaction);
+        // Событие для выбора эмодзи
+        emojiSelection.addEventListener('click', (e) => {
+            const emoji = e.target.dataset.reaction;
+            if (emoji) {
+                if (!selectedReactions[emoji]) {
+                    selectedReactions[emoji] = 0;
                 }
-            });
+                selectedReactions[emoji]++;
+                updateReactions();
+            }
         });
+
+        // Обновление реакций на экране
+        function updateReactions() {
+            textContainer.querySelectorAll('.reaction').forEach(el => el.remove());
+            for (const [emoji, count] of Object.entries(selectedReactions)) {
+                const reactionDiv = document.createElement('div');
+                reactionDiv.className = 'reaction';
+                reactionDiv.innerHTML = `${emoji}<div class="reaction-counter">${count}</div>`;
+                textContainer.appendChild(reactionDiv);
+
+                // Добавление второго уровня реакций
+                reactionDiv.addEventListener('mouseenter', () => {
+                    const secondLevel = document.createElement('div');
+                    secondLevel.className = 'reaction-level-2';
+                    secondLevel.innerHTML = `
+                        <span class="emoji" data-reaction="😡">😡</span>
+                        <span class="emoji" data-reaction="🥳">🥳</span>
+                        <span class="emoji" data-reaction="😮">😮</span>
+                    `;
+                    reactionDiv.appendChild(secondLevel);
+                    secondLevel.style.display = 'block';
+                });
+
+                reactionDiv.addEventListener('mouseleave', () => {
+                    const secondLevel = reactionDiv.querySelector('.reaction-level-2');
+                    if (secondLevel) {
+                        secondLevel.style.display = 'none';
+                    }
+                });
+
+                // Обработка выбора второй реакции
+                reactionDiv.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('emoji')) {
+                        const emoji = e.target.dataset.reaction;
+                        if (emoji) {
+                            if (!selectedReactions[emoji]) {
+                                selectedReactions[emoji] = 0;
+                            }
+                            selectedReactions[emoji]++;
+                            updateReactions();
+                        }
+                    }
+                });
+            }
+        }
     </script>
 </body>
 </html>
