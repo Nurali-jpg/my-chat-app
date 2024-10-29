@@ -24,13 +24,15 @@
                 toggleReactionMenu(true);
             });
 
+            // Обработка mouseleave на textDisplay
             textDisplay.addEventListener("mouseleave", () => {
-                // Не скрываем меню, когда курсор над контейнером реакций
+                // Скрываем меню, только если курсор не над контейнером реакций
                 if (!reactionsContainer.matches(":hover")) {
                     toggleReactionMenu(false);
                 }
             });
 
+            // Обработка mouseenter и mouseleave на reactionsContainer
             reactionsContainer.addEventListener("mouseenter", () => {
                 toggleReactionMenu(true);
             });
