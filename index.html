@@ -75,6 +75,15 @@
             reactionsContainer.addEventListener("mouseleave", () => {
                 reactionsContainer.style.display = "none";
             });
+
+            // Отключаем пропадание окна выбора реакций при наведении на него
+            reactionsContainer.addEventListener("mouseover", () => {
+                reactionsContainer.style.display = "block";
+            });
+
+            reactionsContainer.addEventListener("mouseout", () => {
+                reactionsContainer.style.display = "none";
+            });
         });
     </script>
     <style>
