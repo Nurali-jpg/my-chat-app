@@ -3,128 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат с реакциями</title>
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
-            authDomain: "test0-e7c10.firebaseapp.com",
-            projectId: "test0-e7c10",
-            storageBucket: "test0-e7c10.appspot.com",
-            messagingSenderId: "383308995691",
-            appId: "1:383308995691:web:704d81923b0e512d09252e"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const messageDisplay = document.getElementById("message-display");
-            const reactionsContainer = document.getElementById("reactions-container");
-            const textElement = document.getElementById("random-text");
-
-            const randomTexts = ["Это тестовое сообщение!", "Еще одно сообщение для проверки.", "Кликни на эмодзи!"];
-            const randomText = randomTexts[Math.floor(Math.random() * randomTexts.length)];
-            textElement.textContent = randomText;
-
-            const reactionButtons = ['👍', '❤️', '😂', '😮', '😢', '😡'];
-            const selectedReactions = {};
-
-            reactionButtons.forEach((emoji) => {
-                const button = document.createElement("button");
-                button.textContent = emoji;
-                button.style.marginRight = "5px";
-
-                button.addEventListener("click", () => {
-                    selectedReactions[emoji] = (selectedReactions[emoji] || 0) + 1;
-                    updateReactionDisplay();
-                });
-
-                reactionsContainer.appendChild(button);
-            });
-
-            function updateReactionDisplay() {
-                const displayContainer = document.getElementById("reaction-display");
-                displayContainer.innerHTML = ""; // Очистка предыдущих реакций
-                for (const [emoji, count] of Object.entries(selectedReactions)) {
-                    if (count > 0) {
-                        const reactionDisplay = document.createElement("span");
-                        reactionDisplay.textContent = `${emoji} ${count}`;
-                        reactionDisplay.style.marginRight = "5px";
-                        displayContainer.appendChild(reactionDisplay);
-                    }
-                }
-            }
-
-            textElement.addEventListener("mouseenter", () => {
-                reactionsContainer.style.display = "block";
-            });
-
-            textElement.addEventListener("mouseleave", () => {
-                if (!reactionsContainer.matches(':hover')) {
-                    reactionsContainer.style.display = "none";
-                }
-            });
-
-            reactionsContainer.addEventListener("mouseenter", () => {
-                reactionsContainer.style.display = "block";
-            });
-
-            reactionsContainer.addEventListener("mouseleave", () => {
-                reactionsContainer.style.display = "none";
-            });
-        });
-    </script>
+    <title>Выбор реакции на текст</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             margin: 0;
-            padding: 20px;
-            background-color: #f0f0f0;
+            background: linear-gradient(135deg, #e09, #d0e);
+            font-family: Arial, sans-serif;
         }
-        #message-display {
-            border: 2px solid #007BFF;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: white;
-            text-align: center;
-            margin: 0 auto;
-            width: 80%;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        .text-container {
             position: relative;
+            padding: 20px;
+            border: 3px solid #fff;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            font-size: 2em;
+            color: #fff;
+            text-align: center;
         }
-        #random-text {
-            font-size: 40px; /* Увеличиваем размер текста */
-            margin-bottom: 10px;
-        }
-        #reactions-container {
-            display: none; /* Скрываем выбор реакций по умолчанию */
+        .reaction-menu {
             position: absolute;
-            top: 100%; /* Позиционируем под текстом */
+            top: 100%;
             left: 50%;
             transform: translateX(-50%);
-            background-color: white;
-            border: 1px solid #ccc;
+            display: none;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
             padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            z-index: 10;
-        }
-        #reaction-display {
             margin-top: 10px;
-            font-size: 24px;
+        }
+        .reaction-menu button {
+            background: transparent;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            margin: 0 5px;
+            color: #fff;
+        }
+        .selected-reactions {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 1.2em;
+            color: #fff;
+        }
+        .reaction-display {
+            margin: 0 10px;
         }
     </style>
 </head>
 <body>
-
-    <div id="message-display">
-        <div id="random-text"></div>
-        <div id="reactions-container"></div>
-        <div id="reaction-display"></div>
+    <div class="text-container" id="textContainer">
+        Это ваш рандомный текст.
+        <div class="reaction-menu" id="reactionMenu">
+            <button onclick="addReaction('👍')">👍</button>
+            <button onclick="addReaction('❤️')">❤️</button>
+            <button onclick="addReaction('😂')">😂</button>
+            <button onclick="addReaction('😮')">😮</button>
+            <button onclick="addReaction('😢')">😢</button>
+            <button onclick="addReaction('😡')">😡</button>
+        </div>
+        <div class="selected-reactions" id="selectedReactions"></div>
     </div>
 
+    <script>
+        const textContainer = document.getElementById("textContainer");
+        const reactionMenu = document.getElementById("reactionMenu");
+        const selectedReactions = document.getElementById("selectedReactions");
+        const reactions = {};
+
+        textContainer.addEventListener("mouseenter", () => {
+            reactionMenu.style.display = "flex";
+        });
+
+        textContainer.addEventListener("mouseleave", (event) => {
+            if (!reactionMenu.contains(event.relatedTarget)) {
+                reactionMenu.style.display = "none";
+            }
+        });
+
+        reactionMenu.addEventListener("mouseleave", (event) => {
+            if (!textContainer.contains(event.relatedTarget)) {
+                reactionMenu.style.display = "none";
+            }
+        });
+
+        function addReaction(emoji) {
+            if (reactions[emoji]) {
+                reactions[emoji]++;
+            } else {
+                reactions[emoji] = 1;
+            }
+            renderSelectedReactions();
+        }
+
+        function renderSelectedReactions() {
+            selectedReactions.innerHTML = "";
+            for (const [emoji, count] of Object.entries(reactions)) {
+                const reactionDisplay = document.createElement("span");
+                reactionDisplay.classList.add("reaction-display");
+                reactionDisplay.textContent = `${emoji} ${count}`;
+                selectedReactions.appendChild(reactionDisplay);
+            }
+        }
+    </script>
 </body>
 </html>
