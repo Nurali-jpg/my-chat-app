@@ -1,48 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Static Emoji Reactions</title>
+    <title>Реакции</title>
     <style>
         body {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f5f5dc; /* Бежевый фон */
+            background-color: beige;
             font-family: Arial, sans-serif;
-        }
-        #text-container {
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            padding: 20px;
-            position: relative;
+            flex-direction: column;
             text-align: center;
         }
-        .reaction {
-            display: inline-block;
-            position: relative;
-            margin: 5px;
-            font-size: 24px;
+        .text-container {
+            margin: 20px;
+            font-size: 30px;
         }
-        .reaction-counter {
+        .reaction-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .reaction {
+            font-size: 40px;
+            margin: 5px;
+            position: relative;
+        }
+        .counter {
             position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 12px;
-            color: #555;
+            bottom: -15px;
+            right: 0;
+            font-size: 14px;
+            color: gray;
         }
     </style>
 </head>
 <body>
-    <div id="text-container">
-        <div id="random-text">Это случайный текст.</div>
-        <div class="reaction">👍<div class="reaction-counter">3</div></div>
-        <div class="reaction">❤️<div class="reaction-counter">5</div></div>
-        <div class="reaction">😂<div class="reaction-counter">2</div></div>
-        <div class="reaction" style="margin-left: 20px;">😡<div class="reaction-counter">1</div></div>
+    <div class="text-container">
+        Рандомный текст здесь.
+    </div>
+    <div class="reaction-container">
+        <div class="reaction">
+            😊
+            <div class="counter">1</div>
+        </div>
+        <div class="reaction">
+            😍
+            <div class="counter">1</div>
+        </div>
     </div>
 </body>
 </html>
