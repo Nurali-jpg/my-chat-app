@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emoji Reaction System</title>
+    <title>Static Emoji Reactions</title>
     <style>
         body {
             display: flex;
@@ -18,28 +18,13 @@
             border-radius: 10px;
             padding: 20px;
             position: relative;
-        }
-        .emoji-selection {
-            display: none;
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: white;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 10px;
-            z-index: 10;
-        }
-        .emoji {
-            cursor: pointer;
-            margin: 5px;
-            font-size: 24px;
+            text-align: center;
         }
         .reaction {
             display: inline-block;
             position: relative;
             margin: 5px;
+            font-size: 24px;
         }
         .reaction-counter {
             position: absolute;
@@ -49,101 +34,15 @@
             font-size: 12px;
             color: #555;
         }
-        .reaction-level-2 {
-            display: none;
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: white;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 5px;
-            z-index: 10;
-        }
     </style>
 </head>
 <body>
     <div id="text-container">
         <div id="random-text">Это случайный текст.</div>
-        <div id="emoji-selection" class="emoji-selection">
-            <span class="emoji" data-reaction="👍">👍</span>
-            <span class="emoji" data-reaction="❤️">❤️</span>
-            <span class="emoji" data-reaction="😂">😂</span>
-        </div>
+        <div class="reaction">👍<div class="reaction-counter">3</div></div>
+        <div class="reaction">❤️<div class="reaction-counter">5</div></div>
+        <div class="reaction">😂<div class="reaction-counter">2</div></div>
+        <div class="reaction" style="margin-left: 20px;">😡<div class="reaction-counter">1</div></div>
     </div>
-
-    <script>
-        const textContainer = document.getElementById('text-container');
-        const emojiSelection = document.getElementById('emoji-selection');
-        let selectedReactions = {};
-
-        // Функция для отображения окна выбора эмодзи
-        textContainer.addEventListener('mouseenter', () => {
-            emojiSelection.style.display = 'block';
-        });
-
-        // Скрыть окно выбора эмодзи
-        textContainer.addEventListener('mouseleave', () => {
-            emojiSelection.style.display = 'none';
-        });
-
-        // Событие для выбора эмодзи
-        emojiSelection.addEventListener('click', (e) => {
-            const emoji = e.target.dataset.reaction;
-            if (emoji) {
-                if (!selectedReactions[emoji]) {
-                    selectedReactions[emoji] = 0;
-                }
-                selectedReactions[emoji]++;
-                updateReactions();
-            }
-        });
-
-        // Обновление реакций на экране
-        function updateReactions() {
-            textContainer.querySelectorAll('.reaction').forEach(el => el.remove());
-            for (const [emoji, count] of Object.entries(selectedReactions)) {
-                const reactionDiv = document.createElement('div');
-                reactionDiv.className = 'reaction';
-                reactionDiv.innerHTML = `${emoji}<div class="reaction-counter">${count}</div>`;
-                textContainer.appendChild(reactionDiv);
-
-                // Добавление второго уровня реакций
-                reactionDiv.addEventListener('mouseenter', () => {
-                    const secondLevel = document.createElement('div');
-                    secondLevel.className = 'reaction-level-2';
-                    secondLevel.innerHTML = `
-                        <span class="emoji" data-reaction="😡">😡</span>
-                        <span class="emoji" data-reaction="🥳">🥳</span>
-                        <span class="emoji" data-reaction="😮">😮</span>
-                    `;
-                    reactionDiv.appendChild(secondLevel);
-                    secondLevel.style.display = 'block';
-                });
-
-                reactionDiv.addEventListener('mouseleave', () => {
-                    const secondLevel = reactionDiv.querySelector('.reaction-level-2');
-                    if (secondLevel) {
-                        secondLevel.style.display = 'none';
-                    }
-                });
-
-                // Обработка выбора второй реакции
-                reactionDiv.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('emoji')) {
-                        const emoji = e.target.dataset.reaction;
-                        if (emoji) {
-                            if (!selectedReactions[emoji]) {
-                                selectedReactions[emoji] = 0;
-                            }
-                            selectedReactions[emoji]++;
-                            updateReactions();
-                        }
-                    }
-                });
-            }
-        }
-    </script>
 </body>
 </html>
