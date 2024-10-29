@@ -37,6 +37,11 @@
         }
         .reaction.sub-reaction {
             font-size: 27px; /* Под-реакция уменьшена на 10% */
+            margin: 2px 0; /* Уменьшено расстояние между под-реакциями */
+        }
+        .sub-reactions-row {
+            display: flex; /* Выстраивание под-реакций в ряд */
+            justify-content: center;
         }
         .counter {
             position: absolute;
@@ -57,13 +62,15 @@
                 😊
                 <div class="counter">3</div>
             </div>
-            <div class="reaction sub-reaction">
-                😍
-                <div class="counter">1</div>
-            </div>
-            <div class="reaction sub-reaction">
-                😎
-                <div class="counter">2</div>
+            <div class="sub-reactions-row">
+                <div class="reaction sub-reaction">
+                    😍
+                    <div class="counter">1</div>
+                </div>
+                <div class="reaction sub-reaction">
+                    😎
+                    <div class="counter">2</div>
+                </div>
             </div>
         </div>
         <div class="reaction-container">
@@ -71,13 +78,15 @@
                 😂
                 <div class="counter">4</div>
             </div>
-            <div class="reaction sub-reaction">
-                🤣
-                <div class="counter">1</div>
-            </div>
-            <div class="reaction sub-reaction">
-                😅
-                <div class="counter">5</div>
+            <div class="sub-reactions-row">
+                <div class="reaction sub-reaction">
+                    🤣
+                    <div class="counter">1</div>
+                </div>
+                <div class="reaction sub-reaction">
+                    😅
+                    <div class="counter">5</div>
+                </div>
             </div>
         </div>
         <div class="reaction-container">
@@ -85,13 +94,15 @@
                 😢
                 <div class="counter">2</div>
             </div>
-            <div class="reaction sub-reaction">
-                😭
-                <div class="counter">1</div>
-            </div>
-            <div class="reaction sub-reaction">
-                😱
-                <div class="counter">0</div>
+            <div class="sub-reactions-row">
+                <div class="reaction sub-reaction">
+                    😭
+                    <div class="counter">1</div>
+                </div>
+                <div class="reaction sub-reaction">
+                    😱
+                    <div class="counter">3</div>
+                </div>
             </div>
         </div>
     </div>
