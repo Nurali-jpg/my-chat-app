@@ -6,63 +6,62 @@
     <title>Реакции на текст</title>
     <script type="module">
         document.addEventListener("DOMContentLoaded", () => {
-            const randomTexts = [
-                "Привет, как дела?",
-                "Сегодня хорошая погода.",
-                "Какой твой любимый фильм?",
-                "У тебя есть хобби?",
-                "Что ты думаешь о программировании?",
-            ];
-
-            const textContainer = document.getElementById("text-container");
             const reactionsContainer = document.getElementById("reactions-container");
+            const textDisplay = document.getElementById("text-display");
+            const reactions = ['👍', '❤️', '😂', '😮', '😢', '😡'];
+            const selectedReactions = {};
 
-            function getRandomText() {
-                const randomIndex = Math.floor(Math.random() * randomTexts.length);
-                return randomTexts[randomIndex];
-            }
+            const displayRandomText = () => {
+                const randomText = "Это случайный текст, наведите курсор для реакции.";
+                textDisplay.textContent = randomText;
+            };
 
-            function showReactions() {
-                reactionsContainer.style.display = "block";
-            }
+            const toggleReactionMenu = (show) => {
+                reactionsContainer.style.display = show ? "block" : "none";
+            };
 
-            function hideReactions() {
-                reactionsContainer.style.display = "none";
-            }
+            textDisplay.addEventListener("mouseenter", () => {
+                toggleReactionMenu(true);
+            });
 
-            function addReaction(emoji) {
-                const existingReaction = reactionsContainer.querySelector(`span[data-emoji="${emoji}"]`);
-                if (existingReaction) {
-                    const countElement = existingReaction.querySelector("span");
-                    const count = parseInt(countElement.textContent) || 0;
-                    countElement.textContent = count + 1;
-                } else {
-                    const reactionElement = document.createElement("span");
-                    reactionElement.setAttribute("data-emoji", emoji);
-                    reactionElement.textContent = `${emoji} `;
-                    const countElement = document.createElement("span");
-                    countElement.textContent = "1";
-                    reactionElement.appendChild(countElement);
-                    reactionsContainer.appendChild(reactionElement);
+            textDisplay.addEventListener("mouseleave", () => {
+                // Не скрываем меню, когда курсор над контейнером реакций
+                if (!reactionsContainer.matches(":hover")) {
+                    toggleReactionMenu(false);
                 }
-            }
+            });
 
-            textContainer.textContent = getRandomText();
+            reactionsContainer.addEventListener("mouseenter", () => {
+                toggleReactionMenu(true);
+            });
 
-            textContainer.addEventListener("mouseenter", showReactions);
-            textContainer.addEventListener("mouseleave", hideReactions);
+            reactionsContainer.addEventListener("mouseleave", () => {
+                toggleReactionMenu(false);
+            });
 
-            const emojiButtons = ['👍', '❤️', '😂', '😮', '😢', '😡'];
-            emojiButtons.forEach((emoji) => {
+            reactions.forEach(emoji => {
                 const button = document.createElement("button");
                 button.textContent = emoji;
-                button.addEventListener("click", () => addReaction(emoji));
+                button.style.marginRight = "5px";
+                button.onclick = () => {
+                    selectedReactions[emoji] = (selectedReactions[emoji] || 0) + 1;
+                    renderSelectedReactions();
+                };
                 reactionsContainer.appendChild(button);
             });
 
-            // Оставляем выбор реакций открытым, если курсор над контейнером с реакциями
-            reactionsContainer.addEventListener("mouseenter", showReactions);
-            reactionsContainer.addEventListener("mouseleave", hideReactions);
+            const renderSelectedReactions = () => {
+                const selectedReactionsDisplay = document.getElementById("selected-reactions");
+                selectedReactionsDisplay.innerHTML = ""; // Очищаем предыдущий вывод
+                Object.entries(selectedReactions).forEach(([emoji, count]) => {
+                    const reactionDisplay = document.createElement("span");
+                    reactionDisplay.textContent = `${emoji} ${count}`;
+                    reactionDisplay.style.marginRight = "5px";
+                    selectedReactionsDisplay.appendChild(reactionDisplay);
+                });
+            };
+
+            displayRandomText();
         });
     </script>
     <style>
@@ -71,27 +70,30 @@
             margin: 0;
             padding: 20px;
         }
-        #text-container {
+        #text-display {
             border: 1px solid #ccc;
-            padding: 20px;
-            font-size: 30px; /* Увеличиваем размер текста */
+            padding: 10px;
+            font-size: 30px; /* Увеличенный размер текста */
             margin-bottom: 10px;
-            display: inline-block; /* Позволяем контейнеру обтекать текст */
+            width: fit-content; /* Установка ширины в зависимости от текста */
+            position: relative; /* Для абсолютного позиционирования контейнера реакций */
         }
         #reactions-container {
-            display: none; /* Скрываем выбор реакций по умолчанию */
-            margin-top: 10px;
-        }
-        #reactions-container button {
-            margin-right: 5px;
+            display: none; /* Скрываем контейнер по умолчанию */
+            position: absolute; /* Позволяет наложить контейнер реакций */
+            background: white;
+            border: 1px solid #ccc;
+            padding: 5px;
+            z-index: 1; /* Чтобы контейнер был поверх текста */
         }
     </style>
 </head>
 <body>
 
     <h1>Реакции на текст</h1>
-    <div id="text-container"></div>
+    <div id="text-display"></div>
     <div id="reactions-container"></div>
+    <div id="selected-reactions"></div>
 
 </body>
 </html>
