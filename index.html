@@ -23,14 +23,15 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            margin: 10px 0;
         }
         .reaction {
-            font-size: 40px;
+            font-size: 44px; /* Основная реакция увеличена на 10% */
             margin: 5px;
             position: relative;
         }
         .reaction.sub-reaction {
-            font-size: 30px; /* Уменьшенный размер для под-реакции */
+            font-size: 27px; /* Под-реакция уменьшена на 10% */
         }
         .counter {
             position: absolute;
@@ -52,6 +53,16 @@
         </div>
         <div class="reaction sub-reaction">
             😍
+            <div class="counter">1</div>
+        </div>
+    </div>
+    <div class="reaction-container">
+        <div class="reaction">
+            😂
+            <div class="counter">1</div>
+        </div>
+        <div class="reaction sub-reaction">
+            🤣
             <div class="counter">1</div>
         </div>
     </div>
