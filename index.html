@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Реакции</title>
+    <title>Реакции с подреакциями</title>
     <style>
         body {
             display: flex;
@@ -18,93 +18,109 @@
         .text-container {
             margin: 20px;
             font-size: 30px;
+            position: relative; /* Для абсолютного позиционирования всплывающего окна */
         }
-        .reactions-row {
-            display: flex;
-            justify-content: center;
-            margin: 10px 0;
+        .reaction-popup {
+            display: none; /* Скрыто по умолчанию */
+            position: absolute;
+            top: 50px; /* Позиция под текстом */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            border: 1px solid gray;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+        .reaction {
+            font-size: 30px;
+            cursor: pointer;
+            margin: 5px;
+            display: inline-block;
         }
         .reaction-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 0 20px; /* Увеличено расстояние между реакциями */
-        }
-        .reaction {
-            font-size: 44px; /* Основная реакция увеличена на 10% */
-            margin: 5px;
-            position: relative;
-        }
-        .reaction.sub-reaction {
-            font-size: 27px; /* Под-реакция уменьшена на 10% */
-            margin: 2px 0; /* Уменьшено расстояние между под-реакциями */
+            margin: 10px;
         }
         .sub-reactions-row {
-            display: flex; /* Выстраивание под-реакций в ряд */
+            display: flex;
             justify-content: center;
         }
+        .sub-reaction {
+            font-size: 20px;
+            margin: 2px 5px;
+        }
         .counter {
-            position: absolute;
-            bottom: -15px;
-            right: 0;
-            font-size: 14px;
+            font-size: 12px;
             color: gray;
         }
     </style>
 </head>
 <body>
-    <div class="text-container">
+    <div class="text-container" onmouseover="showPopup()" onmouseout="hidePopup()">
         Рандомный текст здесь.
-    </div>
-    <div class="reactions-row">
-        <div class="reaction-container">
-            <div class="reaction">
-                😊
-                <div class="counter">3</div>
-            </div>
-            <div class="sub-reactions-row">
-                <div class="reaction sub-reaction">
-                    😍
-                    <div class="counter">1</div>
-                </div>
-                <div class="reaction sub-reaction">
-                    😎
-                    <div class="counter">2</div>
-                </div>
-            </div>
-        </div>
-        <div class="reaction-container">
-            <div class="reaction">
-                😂
-                <div class="counter">4</div>
-            </div>
-            <div class="sub-reactions-row">
-                <div class="reaction sub-reaction">
-                    🤣
-                    <div class="counter">1</div>
-                </div>
-                <div class="reaction sub-reaction">
-                    😅
-                    <div class="counter">5</div>
-                </div>
-            </div>
-        </div>
-        <div class="reaction-container">
-            <div class="reaction">
-                😢
-                <div class="counter">2</div>
-            </div>
-            <div class="sub-reactions-row">
-                <div class="reaction sub-reaction">
-                    😭
-                    <div class="counter">1</div>
-                </div>
-                <div class="reaction sub-reaction">
-                    😱
-                    <div class="counter">3</div>
-                </div>
-            </div>
+        <div class="reaction-popup" id="reactionPopup">
+            <div class="reaction" onclick="addReaction('😊')">😊</div>
+            <div class="reaction" onclick="addReaction('😂')">😂</div>
+            <div class="reaction" onclick="addReaction('😍')">😍</div>
+            <div class="reaction" onclick="addReaction('😢')">😢</div>
         </div>
     </div>
+    
+    <div id="reactionsDisplay" class="reactions-row"></div>
+
+    <script>
+        function showPopup() {
+            document.getElementById('reactionPopup').style.display = 'block';
+        }
+
+        function hidePopup() {
+            document.getElementById('reactionPopup').style.display = 'none';
+        }
+
+        function addReaction(reaction) {
+            const reactionsDisplay = document.getElementById('reactionsDisplay');
+
+            // Создаем контейнер для реакции
+            const reactionContainer = document.createElement('div');
+            reactionContainer.className = 'reaction-container';
+
+            // Создаем основную реакцию
+            const mainReaction = document.createElement('div');
+            mainReaction.className = 'reaction';
+            mainReaction.innerHTML = reaction;
+            const mainCounter = document.createElement('div');
+            mainCounter.className = 'counter';
+            mainCounter.innerHTML = '1'; // Счетчик для основной реакции
+            mainReaction.appendChild(mainCounter);
+            reactionContainer.appendChild(mainReaction);
+
+            // Создаем под-реакцию
+            const subReaction = document.createElement('div');
+            subReaction.className = 'sub-reaction';
+            subReaction.innerHTML = '😍'; // Пример под-реакции
+            const subCounter = document.createElement('div');
+            subCounter.className = 'counter';
+            subCounter.innerHTML = '1'; // Счетчик для под-реакции
+            subReaction.appendChild(subCounter);
+
+            // Создаем ряд для подреакций
+            const subReactionsRow = document.createElement('div');
+            subReactionsRow.className = 'sub-reactions-row';
+            subReactionsRow.appendChild(subReaction); // Добавляем под-реакцию в ряд
+
+            // Добавляем под-реакции в контейнер
+            reactionContainer.appendChild(subReactionsRow);
+
+            // Добавляем реакцию на страницу
+            reactionsDisplay.appendChild(reactionContainer);
+
+            // Скрываем всплывающее окно
+            hidePopup();
+        }
+    </script>
 </body>
 </html>
