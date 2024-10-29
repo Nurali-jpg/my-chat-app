@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат с реакциями на реакции</title>
+    <title>Чат без реакций</title>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, updateDoc, doc as firestoreDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
@@ -21,8 +21,6 @@
         const db = getFirestore(app);
 
         document.addEventListener("DOMContentLoaded", () => {
-            console.log("Страница загружена и готова!");
-
             const messageInput = document.getElementById("message-input");
             const sendButton = document.getElementById("send-button");
             const chat = document.getElementById("chat");
@@ -34,10 +32,8 @@
                         await addDoc(collection(db, "messages"), {
                             text: message,
                             timestamp: serverTimestamp(),
-                            reactions: {},
                         });
                         messageInput.value = ""; // Очистка поля ввода
-                        console.log("Сообщение отправлено: ", message);
                     } catch (error) {
                         console.error("Ошибка отправки сообщения: ", error);
                     }
@@ -51,68 +47,9 @@
                     const messageData = doc.data();
                     const messageElement = document.createElement("div");
                     messageElement.textContent = messageData.text;
-
-                    // Блок для отображения уже поставленных реакций под сообщением
-                    const reactionsDisplayContainer = document.createElement("div");
-                    messageElement.appendChild(reactionsDisplayContainer);
-
-                    // Блок выбора реакций при наведении
-                    const reactionsContainer = document.createElement("div");
-                    reactionsContainer.style.display = "none"; // Скрываем реакции по умолчанию
-                    messageElement.appendChild(reactionsContainer);
-
-                    const reactions = messageData.reactions || {};
-                    const reactionButtons = ['👍', '❤️', '😂', '😮', '😢', '😡'];
-                    reactionButtons.forEach((emoji) => {
-                        const button = document.createElement("button");
-                        button.textContent = emoji;
-                        button.style.marginRight = "5px";
-
-                        // Добавляем счётчик к кнопке только при наличии реакции
-                        const count = reactions[emoji] || 0;
-                        const countElement = document.createElement("span");
-                        countElement.textContent = count > 0 ? `${count}` : '';
-                        countElement.style.marginLeft = '5px';
-
-                        button.appendChild(countElement);
-                        reactionsContainer.appendChild(button);
-
-                        button.addEventListener("click", async () => {
-                            const messageRef = firestoreDoc(db, "messages", doc.id);
-                            try {
-                                await updateDoc(messageRef, {
-                                    [`reactions.${emoji}`]: (reactions[emoji] || 0) + 1
-                                });
-                                console.log("Реакция добавлена:", emoji);
-                            } catch (error) {
-                                console.error("Ошибка добавления реакции:", error);
-                            }
-                        });
-                    });
-
-                    // Показываем только использованные реакции в отдельном блоке
-                    Object.entries(reactions).forEach(([emoji, count]) => {
-                        if (count > 0) {
-                            const reactionDisplay = document.createElement("span");
-                            reactionDisplay.textContent = `${emoji} ${count}`;
-                            reactionDisplay.style.marginRight = "5px";
-                            reactionsDisplayContainer.appendChild(reactionDisplay);
-                        }
-                    });
-
-                    // Показать выбор реакций при наведении на сообщение
-                    messageElement.addEventListener("mouseenter", () => {
-                        reactionsContainer.style.display = "block";
-                    });
-
-                    messageElement.addEventListener("mouseleave", () => {
-                        reactionsContainer.style.display = "none";
-                    });
-
                     chat.appendChild(messageElement);
                 });
-                chat.scrollTop = chat.scrollHeight;
-                console.log("Чат обновлен");
+                chat.scrollTop = chat.scrollHeight; // Прокрутка вниз
             });
         });
     </script>
@@ -141,7 +78,7 @@
 </head>
 <body>
 
-    <h1>Чат с реакциями на реакции</h1>
+    <h1>Чат без реакций</h1>
     <div id="chat"></div>
     <input type="text" id="message-input" placeholder="Введите сообщение...">
     <button id="send-button">Отправить</button>
