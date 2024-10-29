@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат с отправкой сообщений</title>
+    <title>Выбор реакции</title>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc as firestoreDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyB_y9YYVJMFIAW_uOoJ5HAAupllEckw4E8",
@@ -21,49 +21,56 @@
         const db = getFirestore(app);
 
         document.addEventListener("DOMContentLoaded", () => {
-            console.log("Страница загружена и готова!");
+            const textContainer = document.getElementById("text-container");
+            const reactionsContainer = document.getElementById("reactions-container");
+            const reactionButtons = ['👍', '❤️', '😂', '😮', '😢', '😡'];
+            const reactions = {};
 
-            const messageInput = document.getElementById("message-input");
-            const sendButton = document.getElementById("send-button");
-            const chat = document.getElementById("chat");
+            // Генерация случайного текста
+            const randomTexts = [
+                "Привет, мир!",
+                "Как дела?",
+                "Это случайный текст.",
+                "Сегодня хороший день!",
+                "Супер-выбор реакции!"
+            ];
+            const randomText = randomTexts[Math.floor(Math.random() * randomTexts.length)];
+            textContainer.textContent = randomText;
 
-            const sendMessage = async () => {
-                const message = messageInput.value;
-                if (message) {
-                    try {
-                        await addDoc(collection(db, "messages"), {
-                            text: message,
-                            timestamp: serverTimestamp(),
-                        });
-                        messageInput.value = ""; // Очистка поля ввода
-                        console.log("Сообщение отправлено: ", message);
-                    } catch (error) {
-                        console.error("Ошибка отправки сообщения: ", error);
-                    }
-                }
-            };
-
-            sendButton.addEventListener("click", sendMessage);
-
-            // Добавление обработчика события нажатия клавиши Enter
-            messageInput.addEventListener("keypress", (event) => {
-                if (event.key === "Enter") {
-                    sendMessage();
-                }
+            // Показываем выбор реакций при наведении на текст
+            textContainer.addEventListener("mouseenter", () => {
+                reactionsContainer.style.display = "block";
             });
 
-            const messagesQuery = query(collection(db, "messages"), orderBy("timestamp"));
-            onSnapshot(messagesQuery, (snapshot) => {
-                chat.innerHTML = ""; // Очистка чата перед обновлением
-                snapshot.forEach((doc) => {
-                    const messageData = doc.data();
-                    const messageElement = document.createElement("div");
-                    messageElement.textContent = messageData.text;
-                    chat.appendChild(messageElement);
+            textContainer.addEventListener("mouseleave", () => {
+                reactionsContainer.style.display = "none";
+            });
+
+            // Создаем кнопки реакций
+            reactionButtons.forEach((emoji) => {
+                const button = document.createElement("button");
+                button.textContent = emoji;
+                button.style.marginRight = "5px";
+                button.style.fontSize = "20px"; // Увеличиваем размер текста реакции
+
+                // Создаем счетчик для реакции
+                const countElement = document.createElement("span");
+                countElement.textContent = '';
+                countElement.style.marginLeft = '5px';
+
+                button.appendChild(countElement);
+                reactionsContainer.appendChild(button);
+
+                // Обработчик нажатия на реакцию
+                button.addEventListener("click", () => {
+                    reactions[emoji] = (reactions[emoji] || 0) + 1;
+                    countElement.textContent = reactions[emoji];
+                    console.log("Реакция добавлена:", emoji);
                 });
-                chat.scrollTop = chat.scrollHeight;
-                console.log("Чат обновлен");
             });
+
+            // Скрываем контейнер реакций изначально
+            reactionsContainer.style.display = "none";
         });
     </script>
     <style>
@@ -72,29 +79,24 @@
             margin: 0;
             padding: 20px;
         }
-        #chat {
-            border: 1px solid #ccc;
-            padding: 10px;
-            height: 300px;
-            overflow-y: scroll;
+        #text-container {
+            font-size: 40px; /* Увеличиваем размер текста */
             margin-bottom: 10px;
         }
-        #message-input {
-            width: calc(100% - 100px);
-            padding: 10px;
-            margin-right: 10px;
+        #reactions-container {
+            display: flex;
+            margin-top: 10px;
         }
-        #send-button {
-            padding: 10px 20px;
+        button {
+            font-size: 20px; /* Размер кнопок реакций */
         }
     </style>
 </head>
 <body>
 
-    <h1>Чат с отправкой сообщений</h1>
-    <div id="chat"></div>
-    <input type="text" id="message-input" placeholder="Введите сообщение...">
-    <button id="send-button">Отправить</button>
+    <h1>Выбор реакции</h1>
+    <div id="text-container"></div>
+    <div id="reactions-container"></div>
 
 </body>
 </html>
