@@ -19,11 +19,16 @@
             margin: 20px;
             font-size: 30px;
         }
+        .reactions-row {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
         .reaction-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 10px 0;
+            margin: 0 20px; /* Увеличено расстояние между реакциями */
         }
         .reaction {
             font-size: 44px; /* Основная реакция увеличена на 10% */
@@ -46,24 +51,30 @@
     <div class="text-container">
         Рандомный текст здесь.
     </div>
-    <div class="reaction-container">
-        <div class="reaction">
-            😊
-            <div class="counter">1</div>
+    <div class="reactions-row">
+        <div class="reaction-container">
+            <div class="reaction">
+                😊
+                <div class="counter">1</div>
+            </div>
+            <div class="reaction sub-reaction">
+                😍
+                <div class="counter">1</div>
+            </div>
         </div>
-        <div class="reaction sub-reaction">
-            😍
-            <div class="counter">1</div>
-        </div>
-    </div>
-    <div class="reaction-container">
-        <div class="reaction">
-            😂
-            <div class="counter">1</div>
-        </div>
-        <div class="reaction sub-reaction">
-            🤣
-            <div class="counter">1</div>
+        <div class="reaction-container">
+            <div class="reaction">
+                😂
+                <div class="counter">1</div>
+            </div>
+            <div class="reaction sub-reaction">
+                🤣
+                <div class="counter">1</div>
+            </div>
+            <div class="reaction sub-reaction">
+                😅
+                <div class="counter">1</div>
+            </div>
         </div>
     </div>
 </body>
