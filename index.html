@@ -3,112 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Выбор реакции на текст</title>
+    <title>Реакции на текст</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            background: linear-gradient(135deg, #e09, #d0e);
-            font-family: Arial, sans-serif;
+            background-color: #f5f5dc; /* Бежевый фон */
         }
-        .text-container {
-            position: relative;
-            padding: 20px;
-            border: 3px solid #fff;
-            border-radius: 10px;
-            background-color: rgba(255, 255, 255, 0.2);
-            font-size: 2em;
-            color: #fff;
+        #content {
             text-align: center;
+            border: 2px solid #d4af37;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 30px;
+            position: relative;
         }
-        .reaction-menu {
+        #reactions-container {
+            display: none;
             position: absolute;
             top: 100%;
             left: 50%;
             transform: translateX(-50%);
-            display: none;
-            background-color: rgba(0, 0, 0, 0.8);
-            border-radius: 10px;
+            background-color: #f5f5dc;
             padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
             margin-top: 10px;
+            z-index: 1;
         }
-        .reaction-menu button {
-            background: transparent;
-            border: none;
-            font-size: 1.5em;
+        .reaction-btn {
+            font-size: 24px;
             cursor: pointer;
-            margin: 0 5px;
-            color: #fff;
+            margin: 5px;
         }
         .selected-reactions {
-            display: flex;
-            justify-content: center;
-            margin-top: 10px;
-            font-size: 1.2em;
-            color: #fff;
-        }
-        .reaction-display {
-            margin: 0 10px;
+            margin-top: 15px;
+            font-size: 24px;
+            color: #d4af37;
         }
     </style>
 </head>
 <body>
-    <div class="text-container" id="textContainer">
-        Это ваш рандомный текст.
-        <div class="reaction-menu" id="reactionMenu">
-            <button onclick="addReaction('👍')">👍</button>
-            <button onclick="addReaction('❤️')">❤️</button>
-            <button onclick="addReaction('😂')">😂</button>
-            <button onclick="addReaction('😮')">😮</button>
-            <button onclick="addReaction('😢')">😢</button>
-            <button onclick="addReaction('😡')">😡</button>
+    <div id="content">
+        Рандомный текст
+        <div id="reactions-container">
+            <span class="reaction-btn" data-emoji="👍">👍</span>
+            <span class="reaction-btn" data-emoji="❤️">❤️</span>
+            <span class="reaction-btn" data-emoji="😂">😂</span>
+            <span class="reaction-btn" data-emoji="😮">😮</span>
+            <span class="reaction-btn" data-emoji="😢">😢</span>
+            <span class="reaction-btn" data-emoji="😡">😡</span>
         </div>
-        <div class="selected-reactions" id="selectedReactions"></div>
+        <div class="selected-reactions" id="selected-reactions"></div>
     </div>
 
     <script>
-        const textContainer = document.getElementById("textContainer");
-        const reactionMenu = document.getElementById("reactionMenu");
-        const selectedReactions = document.getElementById("selectedReactions");
-        const reactions = {};
+        const content = document.getElementById('content');
+        const reactionsContainer = document.getElementById('reactions-container');
+        const selectedReactions = document.getElementById('selected-reactions');
+        let hideTimeout;
 
-        textContainer.addEventListener("mouseenter", () => {
-            reactionMenu.style.display = "flex";
+        content.addEventListener('mouseenter', () => {
+            clearTimeout(hideTimeout);
+            reactionsContainer.style.display = 'block';
         });
 
-        textContainer.addEventListener("mouseleave", (event) => {
-            if (!reactionMenu.contains(event.relatedTarget)) {
-                reactionMenu.style.display = "none";
-            }
+        content.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => {
+                reactionsContainer.style.display = 'none';
+            }, 300); // Задержка для предотвращения исчезновения
         });
 
-        reactionMenu.addEventListener("mouseleave", (event) => {
-            if (!textContainer.contains(event.relatedTarget)) {
-                reactionMenu.style.display = "none";
-            }
+        reactionsContainer.addEventListener('mouseenter', () => {
+            clearTimeout(hideTimeout);
         });
 
-        function addReaction(emoji) {
-            if (reactions[emoji]) {
-                reactions[emoji]++;
-            } else {
-                reactions[emoji] = 1;
-            }
-            renderSelectedReactions();
-        }
+        reactionsContainer.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => {
+                reactionsContainer.style.display = 'none';
+            }, 300);
+        });
 
-        function renderSelectedReactions() {
-            selectedReactions.innerHTML = "";
-            for (const [emoji, count] of Object.entries(reactions)) {
-                const reactionDisplay = document.createElement("span");
-                reactionDisplay.classList.add("reaction-display");
-                reactionDisplay.textContent = `${emoji} ${count}`;
-                selectedReactions.appendChild(reactionDisplay);
-            }
-        }
+        document.querySelectorAll('.reaction-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const emoji = btn.getAttribute('data-emoji');
+                const existingReaction = selectedReactions.querySelector(`span[data-emoji="${emoji}"]`);
+
+                if (existingReaction) {
+                    let count = parseInt(existingReaction.getAttribute('data-count')) + 1;
+                    existingReaction.setAttribute('data-count', count);
+                    existingReaction.textContent = `${emoji} ${count}`;
+                } else {
+                    const newReaction = document.createElement('span');
+                    newReaction.setAttribute('data-emoji', emoji);
+                    newReaction.setAttribute('data-count', 1);
+                    newReaction.textContent = `${emoji} 1`;
+                    newReaction.style.marginRight = '10px';
+                    selectedReactions.appendChild(newReaction);
+                }
+            });
+        });
     </script>
 </body>
 </html>
